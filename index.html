@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sevgililer Günü 💘</title>
+  <style>
+    :root{
+      --bg1:#0f1020; --bg2:#2a0f2f; --card:rgba(255,255,255,.08);
+      --txt:#fff; --muted:rgba(255,255,255,.75); --accent:#ff4d8d;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:var(--txt);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 800px at 20% 10%, #ff4d8d33, transparent 60%),
+                  radial-gradient(900px 700px at 80% 30%, #9b5cff33, transparent 60%),
+                  linear-gradient(140deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:28px 18px 64px;}
+    .hero{
+      display:grid; gap:16px; padding:22px;
+      border:1px solid rgba(255,255,255,.12);
+      background:var(--card); border-radius:22px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 55px rgba(0,0,0,.35);
+      position:relative;
+    }
+    .tag{
+      display:inline-flex; gap:8px; align-items:center;
+      width:fit-content; padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,77,141,.15);
+      border:1px solid rgba(255,77,141,.35);
+      color:var(--muted); font-size:14px;
+    }
+    h1{margin:6px 0 2px; font-size: clamp(28px, 4vw, 46px); letter-spacing:.2px}
+    p{margin:6px 0; color:var(--muted); line-height:1.6; font-size:16px}
+    .grid{display:grid; gap:14px; margin-top:16px}
+    @media(min-width:860px){ .grid{grid-template-columns: 1.2fr .8fr} }
+    .card{
+      padding:18px; border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+    }
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+    button{
+      appearance:none; border:0; cursor:pointer;
+      padding:11px 14px; border-radius:14px;
+      background:rgba(255,255,255,.10); color:var(--txt);
+      border:1px solid rgba(255,255,255,.16);
+      font-weight:600;
+      transition:.18s transform, .18s background, .18s border-color;
+    }
+    button:hover{transform: translateY(-1px); background:rgba(255,255,255,.14)}
+    .primary{
+      background: linear-gradient(135deg, #ff4d8d, #9b5cff);
+      border-color: transparent;
+      box-shadow: 0 10px 30px rgba(255,77,141,.25);
+    }
+    .primary:hover{filter:saturate(1.05)}
+    .note{
+      font-size:14px; color:rgba(255,255,255,.7);
+      margin-top:10px
+    }
+    .hearts{position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius:22px}
+    .heart{
+      position:absolute; width:14px; height:14px;
+      transform: rotate(45deg);
+      background: rgba(255,77,141,.65);
+      animation: floatUp linear infinite;
+      border-radius: 2px;
+      filter: blur(.2px);
+    }
+    .heart:before,.heart:after{
+      content:""; position:absolute; width:14px; height:14px;
+      background: inherit; border-radius: 50%;
+    }
+    .heart:before{left:-7px}
+    .heart:after{top:-7px}
+    @keyframes floatUp{
+      from{transform: translateY(30px) rotate(45deg); opacity:0}
+      10%{opacity:1}
+      to{transform: translateY(-520px) rotate(45deg); opacity:0}
+    }
+    .footer{margin-top:18px; color:rgba(255,255,255,.55); font-size:13px}
+    .kbd{
+      padding:2px 8px; border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px; color:rgba(255,255,255,.8)
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hearts" id="hearts"></div>
+
+      <div class="tag">💌 Küçük bir site, büyük bir his</div>
+      <h1 id="title">İyi ki varsın, <span style="color:var(--accent)">Sevgilim</span> 💘</h1>
+      <p id="subtitle">
+        Bu sayfa sadece sana. Bir linke sığacak kadar basit ama kalbime sığmayacak kadar güzelsin.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h2 style="margin:0 0 8px; font-size:18px">Mini Mektup</h2>
+          <p id="letter">
+            Bugün de, yarın da, sonraki tüm günlerde de… seninle aynı dünyada olmak çok güzel.
+            Gülüşün en sevdiğim “bildirim sesi”.
+          </p>
+          <div class="btns">
+            <button class="primary" onclick="reveal()">Sürprizi Aç 🎁</button>
+            <button onclick="copyText()">Mesajı Kopyala 📋</button>
+            <button onclick="toggleMusic()">Müzik 🎶</button>
+          </div>
+          <div class="note">
+            İpucu: İsimleri ve mesajı sayfanın en altındaki <span class="kbd">Kişiselleştir</span> bölümünden değiştirebilirsin.
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 8px; font-size:18px">3 Küçük Söz</h2>
+          <p>1) Seninle hayat daha “tam”.</p>
+          <p>2) En güzel plan: “yan yana”.</p>
+          <p>3) Kalbim: sürekli <span class="kbd">online</span> (ama sadece sana).</p>
+          <hr style="border:0;border-top:1px solid rgba(255,255,255,.12); margin:14px 0" />
+          <p id="surprise" style="display:none">
+            🌹 Seni çok seviyorum. Bugün senin günün — ve benim en sevdiğim gün de senin olduğun her gün.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        Not: Bu site tek dosya. Telefonla bile açılır. Linki atınca “tak diye” açılacak. 🙂
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">Kişiselleştir</h3>
+      <p style="margin:0 0 10px">
+        Aşağıdakileri değiştirip kaydetmen yeterli:
+        <span class="kbd">Sevgilim</span>, mini mektup, sürpriz mesaj.
+      </p>
+      <ul style="margin:0; padding-left:18px; color:rgba(255,255,255,.75); line-height:1.6">
+        <li><b>Sevgilinin adı</b>: <span class="kbd">Sevgilim</span> yazan yeri değiştir.</li>
+        <li><b>Mini mektup</b>: <span class="kbd">letter</span> kısmındaki metin.</li>
+        <li><b>Arka plan</b>: En üstteki renkleri istersen değiştir.</li>
+      </ul>
+    </section>
+  </div>
+
+  <audio id="music" preload="auto" loop>
+    <!-- İstersen buraya bir mp3 linki koyabilirsin. Yerel dosya da olur ama hosted olması lazım. -->
+  </audio>
+
+  <script>
+    // Kalpler
+    const hearts = document.getElementById("hearts");
+    for (let i=0;i<22;i++){
+      const h=document.createElement("div");
+      h.className="heart";
+      h.style.left = Math.random()*100 + "%";
+      h.style.bottom = (-20 - Math.random()*120) + "px";
+      h.style.animationDuration = (6 + Math.random()*8) + "s";
+      h.style.animationDelay = (Math.random()*6) + "s";
+      h.style.opacity = (0.35 + Math.random()*0.6);
+      h.style.transform = `rotate(45deg) scale(${0.7 + Math.random()*1.6})`;
+      hearts.appendChild(h);
+    }
+
+    function reveal(){
+      const s = document.getElementById("surprise");
+      s.style.display = s.style.display === "none" ? "block" : "none";
+      // küçük “şov”
+      for(let i=0;i<10;i++){
+        const h=document.createElement("div");
+        h.className="heart";
+        h.style.left = (40 + Math.random()*20) + "%";
+        h.style.bottom = "20px";
+        h.style.animationDuration = (3 + Math.random()*3) + "s";
+        h.style.opacity = 0.9;
+        hearts.appendChild(h);
+        setTimeout(()=>h.remove(), 7000);
+      }
+    }
+
+    async function copyText(){
+      const title = document.getElementById("title").innerText;
+      const sub = document.getElementById("subtitle").innerText;
+      const letter = document.getElementById("letter").innerText;
+      const msg = `${title}\n\n${sub}\n\n${letter}`;
+      try{
+        await navigator.clipboard.writeText(msg);
+        alert("Kopyalandı! 💌");
+      }catch(e){
+        alert("Tarayıcı izin vermedi. Metni manuel kopyalayabilirsin 🙂");
+      }
+    }
+
+    function toggleMusic(){
+      const a=document.getElementById("music");
+      if(!a.src){
+        alert("Müzik eklemek için audio etiketine mp3 linki koymalısın 🎶");
+        return;
+      }
+      if(a.paused){ a.play(); }
+      else { a.pause(); }
+    }
+  </script>
+</body>
+</html>
