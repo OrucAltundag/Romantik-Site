@@ -194,6 +194,51 @@
 
     /* Audio görünümü */
     audio{ width:100%; }
+
+    /* İpucu modal */
+    .modalOverlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px);
+      display:flex; align-items:center; justify-content:center; z-index:9999;
+      padding:20px; opacity:0; visibility:hidden; transition:.25s ease;
+    }
+    .modalOverlay.open{ opacity:1; visibility:visible; }
+    .modalBox{
+      max-width:420px; width:100%; padding:28px;
+      background:linear-gradient(145deg, rgba(40,20,50,.95), rgba(20,15,35,.98));
+      border:1px solid var(--border); border-radius:20px;
+      box-shadow:0 25px 80px rgba(0,0,0,.5);
+      transform:scale(0.9); transition:.25s ease;
+    }
+    .modalOverlay.open .modalBox{ transform:scale(1); }
+    .modalBox h3{ margin:0 0 16px; font-size:20px; display:flex; align-items:center; gap:10px; }
+    .modalBox p{ margin:0; color:var(--muted); line-height:1.7; white-space:pre-wrap; }
+    .modalClose{
+      margin-top:20px; width:100%; padding:12px; border-radius:14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border:0; color:#fff; font-weight:600; cursor:pointer; transition:.2s;
+    }
+    .modalClose:hover{ filter:brightness(1.1); }
+
+    /* Tahmin modal input */
+    .modalBox input[type="text"]{
+      width:100%; padding:12px 14px; border-radius:14px;
+      border:1px solid var(--border); background:rgba(255,255,255,.1);
+      color:var(--txt); font-size:16px; margin:14px 0; box-sizing:border-box;
+    }
+    .tahminResult{ margin-top:14px; font-size:18px; font-weight:600; text-align:center; }
+    .tahminResult.correct{ color:#69db7c; }
+    .tahminResult.wrong{ color:#ffa94d; }
+
+    /* Konfeti */
+    #confettiWrap{ position:fixed; inset:0; pointer-events:none; z-index:99999; overflow:hidden; }
+    .confetti{
+      position:absolute; width:10px; height:10px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall{
+      from{ transform: translateY(-10px) rotate(0deg); opacity:1; }
+      to{ transform: translateY(100vh) rotate(720deg); opacity:0; }
+    }
   </style>
 </head>
 
@@ -207,7 +252,10 @@
       <img class="sticker left" id="bearSticker1" alt="">
       <img class="sticker right" id="bearSticker2" alt="">
 
-      <div class="tag" id="tag"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div class="tag" id="tag"></div>
+        <a href="admin.html" style="display:inline-block; text-decoration:none; padding:10px 16px; border-radius:14px; font-size:14px; font-weight:600; color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent2)); border:1px solid transparent;">Giriş Yap 🔐</a>
+      </div>
 
       <!-- BU BAŞLIK AYNEN KALDI -->
       <h1 id="title">İyi ki varsın, Sevgilim 💘</h1>
@@ -219,6 +267,8 @@
 
           <div class="btns">
             <button class="primary" id="surpriseBtn">Sürprizi Aç 🎁</button>
+            <button id="hintBtn">İpucu 💡</button>
+            <button id="tahminBtn">Tahmin Et 🎯</button>
             <button id="copyBtn">Mesajı Kopyala 📋</button>
           </div>
 
@@ -254,14 +304,41 @@
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 10px; font-size:16px">Müzik</h3>
       
-      <audio controls>
+      <audio id="bgMusic" controls autoplay>
         <source src="Music/m1.mp3" type="audio/mpeg">
         Tarayıcın audio etiketini desteklemiyor.
       </audio>
+    </section>
 
-      
+    <!-- Önemli Not (Admin tarafından yönetilir) -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">Önemli Not 📝</h3>
+      <div id="adminNotesDisplay" class="letterText" style="color:var(--muted); white-space:pre-wrap; min-height:60px;">Henüz not eklenmedi.</div>
     </section>
   </div>
+
+  <!-- İpucu modal -->
+  <div class="modalOverlay" id="hintModal">
+    <div class="modalBox">
+      <h3>💡 İpucu</h3>
+      <p id="hintModalText"></p>
+      <button class="modalClose" id="hintModalClose">Tamam</button>
+    </div>
+  </div>
+
+  <!-- Tahmin Et modal -->
+  <div class="modalOverlay" id="tahminModal">
+    <div class="modalBox">
+      <h3>🎯 Tahmin Et</h3>
+      <p style="margin-bottom:0;">Sence sürpriz nedir? Birkaç kelime yaz:</p>
+      <input type="text" id="tahminInput" placeholder="Tahminini yaz..." maxlength="80">
+      <div id="tahminResult" class="tahminResult" style="display:none;"></div>
+      <button class="modalClose" id="tahminSubmit">Tahmin Et</button>
+      <button id="tahminClose" style="margin-top:8px; background:transparent; border:1px solid var(--border);">Kapat</button>
+    </div>
+  </div>
+
+  <div id="confettiWrap"></div>
 
   <script>
     /* =========================
@@ -297,6 +374,9 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
 
       // Sürprizde solda gösterilecek foto
       surprisePhoto: { src: "Resimler/Resim5.jpeg", caption: "🧸🦋" },
+
+      // Sıradaki hediye hakkında ipucu (Sürprizi Aç butonundan önce gösterilecek)
+      surpriseHint: "🎁 İpucu: Sürprizi açtığında hem güzel bir mektup hem de özel bir fotoğraf seni bekliyor… 💌",
 
       // Tema
       theme: {
@@ -360,6 +440,73 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       surpriseMedia.style.display = show ? "block" : "none";
       if (show) burstHearts();
     });
+
+    // İpucu butonu — hoş modal ile
+    const ADMIN_HINT_KEY = "romantik_admin_hint";
+    const hintBtn = document.getElementById("hintBtn");
+    const hintModal = document.getElementById("hintModal");
+    const hintModalText = document.getElementById("hintModalText");
+    const hintModalClose = document.getElementById("hintModalClose");
+    hintBtn.addEventListener("click", () => {
+      const hint = localStorage.getItem(ADMIN_HINT_KEY) || CONFIG.surpriseHint || "Sürprizi açtığında güzel sürprizler seni bekliyor! 💝";
+      hintModalText.textContent = hint;
+      hintModal.classList.add("open");
+    });
+    hintModalClose.addEventListener("click", () => hintModal.classList.remove("open"));
+    hintModal.addEventListener("click", (e) => { if (e.target === hintModal) hintModal.classList.remove("open"); });
+
+    // Tahmin Et — doğru cevap admin'de, doğruysa konfeti + Tebrikler, yanlışsa rastgele mesaj
+    const ADMIN_TAHMIN_KEY = "romantik_admin_tahmin_cevap";
+    const WRONG_MESSAGES = ["Güzel tahmindi ama değil 😅", "Tüh ya! 🌸", "Aboo, olmadı 💫", "Aga bee! Bir daha dene 🦋", "Hmm, değilmiş 🤔", "Yaklaştın belki? Tekrar dene 💝", "Olmasa da güzel tahmindi 💕"];
+    const tahminBtn = document.getElementById("tahminBtn");
+    const tahminModal = document.getElementById("tahminModal");
+    const tahminInput = document.getElementById("tahminInput");
+    const tahminResult = document.getElementById("tahminResult");
+    const tahminSubmit = document.getElementById("tahminSubmit");
+    const tahminClose = document.getElementById("tahminClose");
+    tahminBtn.addEventListener("click", () => {
+      tahminInput.value = "";
+      tahminResult.style.display = "none";
+      tahminResult.className = "tahminResult";
+      tahminModal.classList.add("open");
+      tahminInput.focus();
+    });
+    tahminClose.addEventListener("click", () => tahminModal.classList.remove("open"));
+    tahminModal.addEventListener("click", (e) => { if (e.target === tahminModal) tahminModal.classList.remove("open"); });
+    tahminSubmit.addEventListener("click", () => {
+      const norm = s => s.trim().toLocaleLowerCase("tr-TR");
+      const guess = norm(tahminInput.value);
+      const correct = norm(localStorage.getItem(ADMIN_TAHMIN_KEY) || "");
+      if (!guess) return;
+      const isCorrect = correct && guess === correct;
+      tahminResult.style.display = "block";
+      if (isCorrect) {
+        tahminResult.textContent = "Tebrikler! 🎉";
+        tahminResult.className = "tahminResult correct";
+        burstConfetti();
+      } else {
+        tahminResult.textContent = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
+        tahminResult.className = "tahminResult wrong";
+      }
+    });
+    function burstConfetti() {
+      const wrap = document.getElementById("confettiWrap");
+      const colors = ["#ff4d8d","#9b5cff","#69db7c","#ffd43b","#ff922b","#ff6b6b"];
+      for (let i = 0; i < 80; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.top = "-20px";
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+        c.style.animationDuration = (2 + Math.random() * 3) + "s";
+        c.style.animationDelay = Math.random() * 0.5 + "s";
+        c.style.width = (6 + Math.random() * 8) + "px";
+        c.style.height = c.style.width;
+        wrap.appendChild(c);
+        setTimeout(() => c.remove(), 5000);
+      }
+    }
 
     // Kopyalama
     document.getElementById("copyBtn").addEventListener("click", async () => {
@@ -466,6 +613,27 @@ ${CONFIG.surpriseText}`;
     const s2 = document.getElementById("bearSticker2");
     s1.src = BEAR_DATA_URI_REAL;
     s2.src = BEAR_DATA_URI_REAL;
+
+    // Müzik: otomatik oynat, şarkı tamamen bitince başa sar ve tekrar çal
+    const bgMusic = document.getElementById("bgMusic");
+    if (bgMusic) {
+      bgMusic.play().catch(() => {});
+      bgMusic.addEventListener("ended", () => {
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(() => {});
+      });
+    }
+
+    // Önemli Not — Admin tarafından yönetilen notlar (localStorage)
+    const ADMIN_NOTES_KEY = "romantik_admin_notes";
+    const adminNotesDisplay = document.getElementById("adminNotesDisplay");
+    function loadAdminNotes() {
+      try {
+        const saved = localStorage.getItem(ADMIN_NOTES_KEY);
+        adminNotesDisplay.textContent = saved || "Henüz not eklenmedi.";
+      } catch (e) {}
+    }
+    loadAdminNotes();
   </script>
 </body>
 </html>
