@@ -219,11 +219,11 @@
     }
     .modalClose:hover{ filter:brightness(1.1); }
 
-    /* Tahmin modal input */
-    .modalBox input[type="text"]{
+    .modalBox input[type="text"], .modalBox textarea{
       width:100%; padding:12px 14px; border-radius:14px;
       border:1px solid var(--border); background:rgba(255,255,255,.1);
-      color:var(--txt); font-size:16px; margin:14px 0; box-sizing:border-box;
+      color:var(--txt); font-size:16px; margin:8px 0; box-sizing:border-box;
+      font-family:inherit;
     }
     .tahminResult{ margin-top:14px; font-size:18px; font-weight:600; text-align:center; }
     .tahminResult.correct{ color:#69db7c; }
@@ -239,7 +239,22 @@
       from{ transform: translateY(-10px) rotate(0deg); opacity:1; }
       to{ transform: translateY(100vh) rotate(720deg); opacity:0; }
     }
+
+    /* Papatya yaprakları */
+    .papatyaYaprak{
+      display:inline-block; padding:8px 14px; margin:4px;
+      border-radius:20px; background:linear-gradient(135deg, #69db7c, #51cf66);
+      color:#1a1a2e; font-size:13px; font-weight:600; cursor:pointer;
+      transition:transform .3s, opacity .4s; box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .papatyaYaprak:hover{ transform:scale(1.08); }
+    .papatyaYaprak.dustu{ opacity:0; transform:translateY(20px) scale(0.5); pointer-events:none; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-db.js"></script>
+  <script src="extras.js"></script>
 </head>
 
 <body>
@@ -300,20 +315,100 @@
       <div class="gallery" id="gallery"></div>
     </section>
 
-    <!-- Kişiselleştirme Notu yerine müzik çalar -->
+    <!-- Müzik -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 10px; font-size:16px">Müzik</h3>
-      
-      <audio id="bgMusic" controls autoplay>
+      <div id="musicStartOverlay" style="padding:14px; background:rgba(255,255,255,.06); border-radius:14px; border:1px dashed var(--border); text-align:center; cursor:pointer; color:var(--muted);">🎵 Müziği başlatmak için tıkla</div>
+      <audio id="bgMusic" controls style="width:100%; display:none;">
         <source src="Music/m1.mp3" type="audio/mpeg">
-        Tarayıcın audio etiketini desteklemiyor.
       </audio>
     </section>
 
-    <!-- Önemli Not (Admin tarafından yönetilir) -->
+    <!-- Önemli Not -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 10px; font-size:16px">Önemli Not 📝</h3>
       <div id="adminNotesDisplay" class="letterText" style="color:var(--muted); white-space:pre-wrap; min-height:60px;">Henüz not eklenmedi.</div>
+    </section>
+
+    <!-- İzleme & Dinleme Listeleri -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">🎬 İzleme Listemiz · 🎧 Dinleme Listemiz</h3>
+      <div style="display:grid; gap:14px; grid-template-columns: 1fr 1fr;">
+        <div>
+          <h4 style="margin:0 0 8px; font-size:14px; color:var(--muted);">🎬 İzleme</h4>
+          <div id="watchList"></div>
+          <button class="primary" style="margin-top:8px; font-size:13px;" id="addWatchBtn">+ Ekle</button>
+        </div>
+        <div>
+          <h4 style="margin:0 0 8px; font-size:14px; color:var(--muted);">🎧 Dinleme</h4>
+          <div id="listenList"></div>
+          <button class="primary" style="margin-top:8px; font-size:13px;" id="addListenBtn">+ Ekle</button>
+        </div>
+      </div>
+      <div class="btns" style="margin-top:12px;">
+        <button id="filterAllLists">Tümü</button>
+        <button id="filterPendingLists">Tamamlanmayanlar</button>
+        <button id="filterDoneLists">Tamamlananlar</button>
+        <button class="primary" id="randomPickBtn">🎲 Bu akşam ne izliyoruz?</button>
+      </div>
+    </section>
+
+    <!-- Sürpriz Aşk Kutusu -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">💝 Sürpriz Aşk Kutusu</h3>
+      <p style="margin:0 0 12px; font-size:14px; color:var(--muted);">Kutuyu aç, içinden tatlı sürprizler çıksın!</p>
+      <button class="primary" id="askKutuBtn">🎀 Kutuyu Aç</button>
+    </section>
+
+    <!-- Randevu Çarkı -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">🎡 Randevu Çarkı</h3>
+      <p style="margin:0 0 12px; font-size:14px; color:var(--muted);">Butona bas, rastgele bir randevu fikri çıksın!</p>
+      <button class="primary" id="spinDateBtn">🎡 Çevir</button>
+      <button id="spinAgainBtn" style="display:none; margin-left:8px;">Şansım yok, yeniden çevir</button>
+      <div id="dateResult" style="margin-top:14px; padding:16px; background:rgba(255,255,255,.06); border-radius:14px; display:none;"></div>
+    </section>
+
+    <!-- Oyunlar -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">🎮 Tatlı Oyunlar</h3>
+      <div class="btns">
+        <button class="primary" id="gameQuizBtn">Quiz: Ben seni ne kadar tanıyorum?</button>
+        <button id="gameBenSenBtn">Bu cümle kimin?</button>
+        <button id="gameEvetHayirBtn">Evet / Hayır kaçan buton 😄</button>
+      </div>
+    </section>
+
+    <!-- Anı Kutusu -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">📦 Anı Kutusu</h3>
+      <p style="margin:0 0 12px; font-size:14px; color:var(--muted);">Anı ekle, rastgele çek, hatırla.</p>
+      <button class="primary" id="addMemoryBtn">+ Anı Ekle</button>
+      <button id="randomMemoryBtn" style="margin-left:8px;">🎲 Rastgele Anı Çek</button>
+      <div id="memoryCount" style="margin-top:8px; font-size:13px; color:var(--muted);">0 anı</div>
+      <div id="memoriesList" style="margin-top:12px;"></div>
+    </section>
+
+    <!-- Takvim -->
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 10px; font-size:16px">📅 Bize Özel Takvim</h3>
+      <div style="display:grid; gap:14px;">
+        <div>
+          <h4 style="margin:0 0 8px; font-size:14px;">Önemli Günler</h4>
+          <div id="importantDates"></div>
+          <button id="addDateBtn" style="font-size:13px; margin-top:6px;">+ Ekle</button>
+        </div>
+        <div>
+          <h4 style="margin:0 0 8px; font-size:14px;">Bu Haftanın Planı</h4>
+          <div id="weeklyPlans"></div>
+          <button id="addPlanBtn" style="font-size:13px; margin-top:6px;">+ Ekle</button>
+        </div>
+        <div>
+          <h4 style="margin:0 0 8px; font-size:14px;">Mini Hedefler</h4>
+          <div id="miniGoals"></div>
+          <button id="addGoalBtn" style="font-size:13px; margin-top:6px;">+ Ekle</button>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -340,6 +435,107 @@
 
   <div id="confettiWrap"></div>
 
+  <!-- Liste item modal -->
+  <div class="modalOverlay" id="listItemModal">
+    <div class="modalBox" style="max-width:400px;">
+      <h3 id="listItemModalTitle">Ekle</h3>
+      <input type="text" id="listItemTitle" placeholder="Başlık (örn. Interstellar)">
+      <input type="text" id="listItemType" placeholder="Tür/Not (opsiyonel)">
+      <input type="text" id="listItemLink" placeholder="Link (YouTube/Spotify/IMDb)">
+      <button class="modalClose" id="listItemSave">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- Anı modal -->
+  <div class="modalOverlay" id="memoryModal">
+    <div class="modalBox" style="max-width:420px;">
+      <h3>Anı Ekle</h3>
+      <input type="text" id="memoryTitle" placeholder="Başlık">
+      <input type="text" id="memoryDate" placeholder="Tarih (örn. 2025-02-14)">
+      <textarea id="memoryNote" placeholder="Not (2-6 cümle)" rows="4" style="width:100%; padding:12px; border-radius:14px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); margin:8px 0;"></textarea>
+      <button class="modalClose" id="memorySave">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- Takvim item modal -->
+  <div class="modalOverlay" id="calendarModal">
+    <div class="modalBox" style="max-width:400px;">
+      <h3 id="calendarModalTitle">Ekle</h3>
+      <input type="text" id="calItemTitle" placeholder="Başlık">
+      <input type="text" id="calItemDate" placeholder="Tarih (opsiyonel)">
+      <button class="modalClose" id="calItemSave">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- Quiz modal -->
+  <div class="modalOverlay" id="quizModal">
+    <div class="modalBox" style="max-width:440px;">
+      <h3>Ben seni ne kadar tanıyorum?</h3>
+      <p id="quizQuestion" style="margin:12px 0;"></p>
+      <div id="quizChoices"></div>
+      <p id="quizResult" style="display:none; margin-top:12px; font-weight:600;"></p>
+      <button class="modalClose" id="quizNextBtn" style="display:none;">Sonraki</button>
+    </div>
+  </div>
+
+  <!-- Ben mi Sen mi modal -->
+  <div class="modalOverlay" id="benSenModal">
+    <div class="modalBox">
+      <h3>Bu cümle kimin?</h3>
+      <p id="benSenText" style="font-size:18px; margin:20px 0;"></p>
+      <div class="btns">
+        <button class="primary" id="benSenBen">Ben</button>
+        <button id="benSenSen" class="benSenOther">Sevgilim</button>
+      </div>
+      <p id="benSenResult" style="margin-top:12px;"></p>
+    </div>
+  </div>
+
+  <!-- Sürpriz Aşk Kutusu - Sayfa 1: Beni seviyor musun? -->
+  <div class="modalOverlay" id="askKutuSeviyorModal">
+    <div class="modalBox" style="text-align:center; max-width:380px;">
+      <h3 style="margin:0 0 24px;">Beni seviyor musun? 💕</h3>
+      <div id="seviyorBtnWrap" style="display:flex; gap:16px; justify-content:center; align-items:center; flex-wrap:wrap; min-height:80px;">
+        <button class="primary" id="seviyorEvetBtn" style="transition:all .3s; transform:scale(1);">Evet 💘</button>
+        <button id="seviyorHayirBtn" style="transition:all .3s; transform:scale(1);">Hayır</button>
+      </div>
+      <p id="seviyorSonuc" style="display:none; margin-top:20px; font-size:18px; font-weight:600; color:var(--accent);"></p>
+      <button class="modalClose" id="seviyorKapat" style="display:none; margin-top:16px;">Kapat</button>
+    </div>
+  </div>
+
+  <!-- Sürpriz Aşk Kutusu - Sayfa 2: Papatya -->
+  <div class="modalOverlay" id="askKutuPapatyaModal">
+    <div class="modalBox" style="text-align:center; max-width:340px;">
+      <h3 style="margin:0 0 20px;">🌼 Papatya Falı</h3>
+      <p style="font-size:14px; color:var(--muted); margin-bottom:16px;">Yapraklara tıkla: Seviyor... Sevmiyor...</p>
+      <div id="papatyaWrap" style="position:relative; min-height:220px; display:flex; flex-direction:column; align-items:center;">
+        <div id="papatyaCicek" style="font-size:48px; margin-bottom:8px;">🌼</div>
+        <div id="papatyaYapraklar"></div>
+        <p id="papatyaSonuc" style="display:none; margin-top:16px; font-size:20px; font-weight:700; color:var(--accent);">Seviyor! 💕</p>
+      </div>
+      <button class="modalClose" id="papatyaKapat" style="display:none;">Kapat</button>
+    </div>
+  </div>
+
+  <!-- Evet/Hayır modal -->
+  <div class="modalOverlay" id="evetHayirModal">
+    <div class="modalBox" style="text-align:center;">
+      <h3>Bugün bana bir öpücük borcun var mı? 😄</h3>
+      <div id="evetHayirWrap" style="position:relative; margin:24px 0; min-height:100px; display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
+        <button class="primary" id="evetBtn">Evet 💕</button>
+        <button id="hayirBtn" style="transition:all .12s; position:relative;">Hayır</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('BURAYA') && typeof firebase !== 'undefined') {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+    } catch (e) { console.warn('Firebase init:', e); }
+  </script>
   <script>
     /* =========================
        CONFIG — sadece burayı değiştir
@@ -441,22 +637,20 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       if (show) burstHearts();
     });
 
-    // İpucu butonu — hoş modal ile
-    const ADMIN_HINT_KEY = "romantik_admin_hint";
+    // İpucu butonu — hoş modal ile (Firebase/localStorage)
     const hintBtn = document.getElementById("hintBtn");
     const hintModal = document.getElementById("hintModal");
     const hintModalText = document.getElementById("hintModalText");
     const hintModalClose = document.getElementById("hintModalClose");
-    hintBtn.addEventListener("click", () => {
-      const hint = localStorage.getItem(ADMIN_HINT_KEY) || CONFIG.surpriseHint || "Sürprizi açtığında güzel sürprizler seni bekliyor! 💝";
-      hintModalText.textContent = hint;
+    hintBtn.addEventListener("click", async () => {
+      const cfg = await getSiteConfig();
+      hintModalText.textContent = cfg.hint || CONFIG.surpriseHint || "Sürprizi açtığında güzel sürprizler seni bekliyor! 💝";
       hintModal.classList.add("open");
     });
     hintModalClose.addEventListener("click", () => hintModal.classList.remove("open"));
     hintModal.addEventListener("click", (e) => { if (e.target === hintModal) hintModal.classList.remove("open"); });
 
     // Tahmin Et — doğru cevap admin'de, doğruysa konfeti + Tebrikler, yanlışsa rastgele mesaj
-    const ADMIN_TAHMIN_KEY = "romantik_admin_tahmin_cevap";
     const WRONG_MESSAGES = ["Güzel tahmindi ama değil 😅", "Tüh ya! 🌸", "Aboo, olmadı 💫", "Aga bee! Bir daha dene 🦋", "Hmm, değilmiş 🤔", "Yaklaştın belki? Tekrar dene 💝", "Olmasa da güzel tahmindi 💕"];
     const tahminBtn = document.getElementById("tahminBtn");
     const tahminModal = document.getElementById("tahminModal");
@@ -473,10 +667,11 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     });
     tahminClose.addEventListener("click", () => tahminModal.classList.remove("open"));
     tahminModal.addEventListener("click", (e) => { if (e.target === tahminModal) tahminModal.classList.remove("open"); });
-    tahminSubmit.addEventListener("click", () => {
+    tahminSubmit.addEventListener("click", async () => {
       const norm = s => s.trim().toLocaleLowerCase("tr-TR");
       const guess = norm(tahminInput.value);
-      const correct = norm(localStorage.getItem(ADMIN_TAHMIN_KEY) || "");
+      const cfg = await getSiteConfig();
+      const correct = norm(cfg.tahminCevap || "");
       if (!guess) return;
       const isCorrect = correct && guess === correct;
       tahminResult.style.display = "block";
@@ -614,26 +809,279 @@ ${CONFIG.surpriseText}`;
     s1.src = BEAR_DATA_URI_REAL;
     s2.src = BEAR_DATA_URI_REAL;
 
-    // Müzik: otomatik oynat, şarkı tamamen bitince başa sar ve tekrar çal
+    // Müzik — tarayıcı autoplay engeli: ilk tıklamada başlat
     const bgMusic = document.getElementById("bgMusic");
-    if (bgMusic) {
+    const musicOverlay = document.getElementById("musicStartOverlay");
+    function startMusic() {
+      if (!bgMusic) return;
+      musicOverlay.style.display = "none";
+      bgMusic.style.display = "block";
       bgMusic.play().catch(() => {});
-      bgMusic.addEventListener("ended", () => {
-        bgMusic.currentTime = 0;
-        bgMusic.play().catch(() => {});
-      });
+    }
+    musicOverlay.addEventListener("click", startMusic);
+    // Otomatik dene (bazı tarayıcılarda çalışır)
+    if (bgMusic) {
+      bgMusic.play().then(() => {
+        musicOverlay.style.display = "none";
+        bgMusic.style.display = "block";
+      }).catch(() => {});
+      bgMusic.addEventListener("ended", () => { bgMusic.currentTime = 0; bgMusic.play().catch(() => {}); });
     }
 
-    // Önemli Not — Admin tarafından yönetilen notlar (localStorage)
-    const ADMIN_NOTES_KEY = "romantik_admin_notes";
+    // Önemli Not
     const adminNotesDisplay = document.getElementById("adminNotesDisplay");
-    function loadAdminNotes() {
-      try {
-        const saved = localStorage.getItem(ADMIN_NOTES_KEY);
-        adminNotesDisplay.textContent = saved || "Henüz not eklenmedi.";
-      } catch (e) {}
+    getSiteConfig().then(cfg => { adminNotesDisplay.textContent = cfg.notes || "Henüz not eklenmedi."; }).catch(() => { adminNotesDisplay.textContent = getFromLocalStorage().notes || "Henüz not eklenmedi."; });
+
+    // ========== İZLEME & DİNLEME LİSTELERİ ==========
+    let listFilter = "all"; // all | pending | done
+    let currentListType = "watch";
+    async function loadLists() {
+      const watch = await getCollection("watchList");
+      const listen = await getCollection("listenList");
+      renderList("watchList", watch, "watch");
+      renderList("listenList", listen, "listen");
     }
-    loadAdminNotes();
+    function renderList(elId, arr, type) {
+      const el = document.getElementById(elId);
+      const filtered = listFilter === "all" ? arr : listFilter === "done" ? arr.filter(x => x.completed) : arr.filter(x => !x.completed);
+      el.innerHTML = filtered.length ? filtered.map((item, i) => {
+        const idx = arr.indexOf(item);
+        const chk = item.completed ? "checked" : "";
+        return `<div class="card" style="padding:10px; margin-bottom:8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <input type="checkbox" ${chk} onchange="toggleList('${type}',${idx})" style="cursor:pointer;">
+          <div style="flex:1;">
+            <strong>${escapeHtml(item.title || "")}</strong>
+            ${item.type ? `<span style="font-size:12px; color:var(--muted);"> — ${escapeHtml(item.type)}</span>` : ""}
+            ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" style="font-size:12px; margin-left:8px;">🔗</a>` : ""}
+            <div style="font-size:11px; color:var(--muted);">${item.date || ""}</div>
+          </div>
+          <button onclick="deleteList('${type}',${idx})" style="padding:4px 8px; font-size:12px;">Sil</button>
+        </div>`;
+      }).join("") : `<p style="color:var(--muted); font-size:14px;">Henüz öğe yok.</p>`;
+    }
+    window.toggleList = async (type, idx) => {
+      const key = type === "watch" ? "watchList" : "listenList";
+      const arr = await getCollection(key);
+      if (arr[idx]) { arr[idx].completed = !arr[idx].completed; await setCollection(key, arr); loadLists(); }
+    };
+    window.deleteList = async (type, idx) => {
+      const key = type === "watch" ? "watchList" : "listenList";
+      const arr = await getCollection(key);
+      arr.splice(idx, 1); await setCollection(key, arr); loadLists();
+    };
+    document.getElementById("addWatchBtn").onclick = () => { currentListType = "watch"; document.getElementById("listItemModalTitle").textContent = "İzleme Listesine Ekle"; document.getElementById("listItemModal").classList.add("open"); };
+    document.getElementById("addListenBtn").onclick = () => { currentListType = "listen"; document.getElementById("listItemModalTitle").textContent = "Dinleme Listesine Ekle"; document.getElementById("listItemModal").classList.add("open"); };
+    document.getElementById("listItemSave").onclick = async () => {
+      const title = document.getElementById("listItemTitle").value.trim();
+      if (!title) return;
+      const key = currentListType === "watch" ? "watchList" : "listenList";
+      const arr = await getCollection(key);
+      arr.unshift({ title, type: document.getElementById("listItemType").value.trim(), link: document.getElementById("listItemLink").value.trim(), completed: false, date: new Date().toLocaleDateString("tr-TR") });
+      await setCollection(key, arr);
+      document.getElementById("listItemTitle").value = document.getElementById("listItemType").value = document.getElementById("listItemLink").value = "";
+      document.getElementById("listItemModal").classList.remove("open");
+      loadLists();
+    };
+    document.getElementById("filterAllLists").onclick = () => { listFilter = "all"; loadLists(); };
+    document.getElementById("filterPendingLists").onclick = () => { listFilter = "pending"; loadLists(); };
+    document.getElementById("filterDoneLists").onclick = () => { listFilter = "done"; loadLists(); };
+    document.getElementById("randomPickBtn").onclick = async () => {
+      const w = await getCollection("watchList");
+      const pending = w.filter(x => !x.completed);
+      if (!pending.length) { alert("Tamamlanmamış izleme öğesi yok."); return; }
+      const pick = pending[Math.floor(Math.random() * pending.length)];
+      alert(`Bu akşam: ${pick.title} ${pick.link ? "\n" + pick.link : ""}`);
+    };
+    document.getElementById("listItemModal").addEventListener("click", e => { if (e.target.id === "listItemModal") e.target.classList.remove("open"); });
+    document.getElementById("memoryModal").addEventListener("click", e => { if (e.target.id === "memoryModal") e.target.classList.remove("open"); });
+    document.getElementById("calendarModal").addEventListener("click", e => { if (e.target.id === "calendarModal") e.target.classList.remove("open"); });
+    document.getElementById("quizModal").addEventListener("click", e => { if (e.target.id === "quizModal") e.target.classList.remove("open"); });
+    document.getElementById("benSenModal").addEventListener("click", e => { if (e.target.id === "benSenModal") e.target.classList.remove("open"); });
+    document.getElementById("evetHayirModal").addEventListener("click", e => { if (e.target.id === "evetHayirModal") e.target.classList.remove("open"); });
+
+    // ========== SÜRPRIZ AŞK KUTUSU ==========
+    document.getElementById("askKutuBtn").onclick = () => {
+      const r = Math.random();
+      if (r < 0.5) openSeviyorModal();
+      else openPapatyaModal();
+    };
+    function openSeviyorModal() {
+      evetScale = 1; hayirScale = 1;
+      document.getElementById("seviyorBtnWrap").style.display = "flex";
+      document.getElementById("seviyorEvetBtn").style.transform = "scale(1)";
+      document.getElementById("seviyorHayirBtn").style.transform = "scale(1)";
+      document.getElementById("seviyorSonuc").style.display = "none";
+      document.getElementById("seviyorKapat").style.display = "none";
+      document.getElementById("askKutuSeviyorModal").classList.add("open");
+    }
+    let evetScale = 1, hayirScale = 1;
+    document.getElementById("seviyorHayirBtn").onclick = () => {
+      evetScale = Math.min(2.5, evetScale + 0.2);
+      hayirScale = Math.max(0.3, hayirScale - 0.15);
+      document.getElementById("seviyorEvetBtn").style.transform = `scale(${evetScale})`;
+      document.getElementById("seviyorHayirBtn").style.transform = `scale(${hayirScale})`;
+    };
+    document.getElementById("seviyorEvetBtn").onclick = () => {
+      document.getElementById("seviyorBtnWrap").style.display = "none";
+      const isim = CONFIG.loverName ? (CONFIG.loverName.charAt(0).toUpperCase() + CONFIG.loverName.slice(1).toLowerCase()) : "birtanem";
+      document.getElementById("seviyorSonuc").textContent = "Ben de seni çok seviyorum " + isim + "! 💕";
+      document.getElementById("seviyorSonuc").style.display = "block";
+      document.getElementById("seviyorKapat").style.display = "inline-block";
+      burstHearts && burstHearts();
+    };
+    document.getElementById("seviyorKapat").onclick = () => document.getElementById("askKutuSeviyorModal").classList.remove("open");
+    document.getElementById("askKutuSeviyorModal").addEventListener("click", e => { if (e.target.id === "askKutuSeviyorModal") e.target.classList.remove("open"); });
+
+    function openPapatyaModal() {
+      const labels = ["Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor"];
+      const wrap = document.getElementById("papatyaYapraklar");
+      wrap.innerHTML = "";
+      document.getElementById("papatyaSonuc").style.display = "none";
+      document.getElementById("papatyaKapat").style.display = "none";
+      labels.forEach((txt, i) => {
+        const y = document.createElement("span");
+        y.className = "papatyaYaprak";
+        y.textContent = txt;
+        y.dataset.idx = i;
+        y.onclick = () => {
+          y.classList.add("dustu");
+          const remain = wrap.querySelectorAll(".papatyaYaprak:not(.dustu)");
+          if (remain.length === 0) {
+            document.getElementById("papatyaSonuc").textContent = "Seviyor! 💕";
+            document.getElementById("papatyaSonuc").style.display = "block";
+            document.getElementById("papatyaKapat").style.display = "inline-block";
+            burstHearts && burstHearts();
+          }
+        };
+        wrap.appendChild(y);
+      });
+      document.getElementById("askKutuPapatyaModal").classList.add("open");
+    }
+    document.getElementById("papatyaKapat").onclick = () => document.getElementById("askKutuPapatyaModal").classList.remove("open");
+    document.getElementById("askKutuPapatyaModal").addEventListener("click", e => { if (e.target.id === "askKutuPapatyaModal") e.target.classList.remove("open"); });
+
+    // ========== RANDEVU ÇARKI ==========
+    let lastSpin = null; let spinUsed = false;
+    document.getElementById("spinDateBtn").onclick = () => {
+      const ideas = getAllDateIdeas();
+      const pick = ideas[Math.floor(Math.random() * ideas.length)];
+      lastSpin = pick; spinUsed = false;
+      document.getElementById("dateResult").style.display = "block";
+      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}<br>${pick.task ? `Görev: ${pick.task}<br>` : ""}${pick.req ? `Gerekenler: ${pick.req}` : ""}`;
+      document.getElementById("spinAgainBtn").style.display = "inline-block";
+    };
+    document.getElementById("spinAgainBtn").onclick = () => {
+      if (spinUsed) { alert("Bugün sadece 1 kez yeniden çevirebilirsin!"); return; }
+      spinUsed = true;
+      const ideas = getAllDateIdeas().filter(x => x.title !== lastSpin.title);
+      const pick = ideas[Math.floor(Math.random() * ideas.length)];
+      lastSpin = pick;
+      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}`;
+    };
+
+    // ========== OYUNLAR ==========
+    document.getElementById("gameQuizBtn").onclick = async () => {
+      let quiz = await getCollection("quizData");
+      if (!quiz.length) quiz = DEFAULT_QUIZ;
+      const q = quiz[Math.floor(Math.random() * quiz.length)];
+      document.getElementById("quizModal").classList.add("open");
+      document.getElementById("quizQuestion").textContent = q.q;
+      document.getElementById("quizChoices").innerHTML = (q.a || []).map((opt, i) => `<button class="modalClose" style="display:block; width:100%; margin:6px 0;" onclick="checkQuiz(${i}, ${q.correct || 0})">${opt}</button>`).join("");
+      document.getElementById("quizResult").style.display = "none";
+      document.getElementById("quizNextBtn").style.display = "none";
+    };
+    window.checkQuiz = (selected, correct) => {
+      const el = document.getElementById("quizResult");
+      el.style.display = "block";
+      if (selected === correct) { el.textContent = "Doğru! 💘"; el.style.color = "#69db7c"; burstHearts && burstHearts(); } else { el.textContent = "Yanlış 😅"; el.style.color = "#ffa94d"; }
+      document.getElementById("quizNextBtn").style.display = "block";
+    };
+    document.getElementById("quizNextBtn").onclick = () => document.getElementById("quizModal").classList.remove("open");
+
+    document.getElementById("gameBenSenBtn").onclick = async () => {
+      document.getElementById("benSenSen").textContent = CONFIG.loverName || "Sevgilim";
+      let sent = await getCollection("sentences");
+      if (!sent.length) sent = DEFAULT_SENTENCES;
+      const s = sent[Math.floor(Math.random() * sent.length)];
+      document.getElementById("benSenModal").classList.add("open");
+      document.getElementById("benSenText").textContent = s.text;
+      document.getElementById("benSenResult").textContent = "";
+      document.getElementById("benSenBen").onclick = () => { document.getElementById("benSenResult").textContent = (s.speaker === "ben" ? "Doğru! 💕" : "Yanlış!"); };
+      document.getElementById("benSenSen").onclick = () => { document.getElementById("benSenResult").textContent = (s.speaker === "sen" ? "Doğru! 💕" : "Yanlış!"); };
+    };
+
+    document.getElementById("gameEvetHayirBtn").onclick = () => {
+      document.getElementById("evetHayirModal").classList.add("open");
+      const hayir = document.getElementById("hayirBtn");
+      const wrap = document.getElementById("evetHayirWrap");
+      hayir.onmouseenter = () => {
+        const rect = wrap.getBoundingClientRect();
+        hayir.style.position = "absolute";
+        hayir.style.left = (Math.random() * Math.min(200, rect.width - 80)) + "px";
+        hayir.style.top = (Math.random() * Math.min(80, rect.height - 40)) + "px";
+      };
+    };
+    document.getElementById("evetBtn").onclick = () => {
+      alert("Sana 1 şarkı armağan 🎶");
+      document.getElementById("evetHayirModal").classList.remove("open");
+    };
+
+    // ========== ANI KUTUSU ==========
+    async function loadMemories() {
+      const arr = await getCollection("memories");
+      document.getElementById("memoryCount").textContent = arr.length + " anı";
+      document.getElementById("memoriesList").innerHTML = arr.slice(0, 5).map(m => `<div class="card" style="padding:12px; margin-bottom:8px;"><strong>${escapeHtml(m.title)}</strong> <span style="font-size:12px; color:var(--muted);">${m.date || ""}</span><p style="margin:8px 0 0; font-size:14px;">${escapeHtml((m.note || "").slice(0, 80))}...</p></div>`).join("") || "<p style='color:var(--muted);'>Henüz anı yok.</p>";
+    }
+    document.getElementById("addMemoryBtn").onclick = () => { document.getElementById("memoryModal").classList.add("open"); };
+    document.getElementById("memorySave").onclick = async () => {
+      const title = document.getElementById("memoryTitle").value.trim();
+      if (!title) return;
+      const arr = await getCollection("memories");
+      arr.unshift({ title, date: document.getElementById("memoryDate").value.trim(), note: document.getElementById("memoryNote").value.trim() });
+      await setCollection("memories", arr);
+      document.getElementById("memoryTitle").value = document.getElementById("memoryDate").value = document.getElementById("memoryNote").value = "";
+      document.getElementById("memoryModal").classList.remove("open");
+      loadMemories();
+    };
+    document.getElementById("randomMemoryBtn").onclick = async () => {
+      const arr = await getCollection("memories");
+      if (!arr.length) { alert("Henüz anı yok. Önce ekle!"); return; }
+      const m = arr[Math.floor(Math.random() * arr.length)];
+      alert(`${m.title}\n${m.date || ""}\n\n${m.note || ""}`);
+    };
+
+    // ========== TAKVİM ==========
+    let calEditType = "dates";
+    async function loadCalendar() {
+      const cal = await getDoc("calendar");
+      const dates = cal.importantDates || [];
+      const plans = cal.weeklyPlans || [];
+      const goals = cal.miniGoals || [];
+      document.getElementById("importantDates").innerHTML = dates.map((d, i) => `<div class="card" style="padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span>${escapeHtml(d.title)} — ${d.date || ""}</span><button onclick="deleteCalItem('importantDates',${i})" style="padding:2px 6px; font-size:12px;">Sil</button></div>`).join("") || "<p style='color:var(--muted); font-size:13px;'>Önemli gün ekle</p>";
+      document.getElementById("weeklyPlans").innerHTML = plans.map((p, i) => `<div class="card" style="padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span><input type="checkbox" ${p.done ? "checked" : ""} onchange="togglePlan(${i})"> ${escapeHtml(p.title)} — ${p.date || ""}</span><button onclick="deleteCalItem('weeklyPlans',${i})" style="padding:2px 6px; font-size:12px;">Sil</button></div>`).join("") || "<p style='color:var(--muted); font-size:13px;'>Plan ekle</p>";
+      document.getElementById("miniGoals").innerHTML = goals.map((g, i) => `<div class="card" style="padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span><input type="checkbox" ${g.done ? "checked" : ""} onchange="toggleGoal(${i})"> ${escapeHtml(g.title)}</span><button onclick="deleteCalItem('miniGoals',${i})" style="padding:2px 6px; font-size:12px;">Sil</button></div>`).join("") || "<p style='color:var(--muted); font-size:13px;'>Hedef ekle</p>";
+    }
+    window.deleteCalItem = async (key, idx) => { const cal = await getDoc("calendar"); const arr = cal[key] || []; arr.splice(idx, 1); cal[key] = arr; await setDoc("calendar", cal); loadCalendar(); };
+    window.togglePlan = async (i) => { const cal = await getDoc("calendar"); const arr = cal.weeklyPlans || []; if (arr[i]) { arr[i].done = !arr[i].done; cal.weeklyPlans = arr; await setDoc("calendar", cal); loadCalendar(); } };
+    window.toggleGoal = async (i) => { const cal = await getDoc("calendar"); const arr = cal.miniGoals || []; if (arr[i]) { arr[i].done = !arr[i].done; cal.miniGoals = arr; await setDoc("calendar", cal); loadCalendar(); } };
+    document.getElementById("addDateBtn").onclick = () => { calEditType = "importantDates"; document.getElementById("calendarModalTitle").textContent = "Önemli Gün Ekle"; document.getElementById("calendarModal").classList.add("open"); };
+    document.getElementById("addPlanBtn").onclick = () => { calEditType = "weeklyPlans"; document.getElementById("calendarModalTitle").textContent = "Plan Ekle"; document.getElementById("calendarModal").classList.add("open"); };
+    document.getElementById("addGoalBtn").onclick = () => { calEditType = "miniGoals"; document.getElementById("calendarModalTitle").textContent = "Hedef Ekle"; document.getElementById("calendarModal").classList.add("open"); };
+    document.getElementById("calItemSave").onclick = async () => {
+      const title = document.getElementById("calItemTitle").value.trim();
+      if (!title) return;
+      const cal = await getDoc("calendar");
+      const arr = cal[calEditType] || [];
+      arr.push({ title, date: document.getElementById("calItemDate").value.trim(), done: false });
+      cal[calEditType] = arr;
+      await setDoc("calendar", cal);
+      document.getElementById("calItemTitle").value = document.getElementById("calItemDate").value = "";
+      document.getElementById("calendarModal").classList.remove("open");
+      loadCalendar();
+    };
+
+    // Başlangıç yükle
+    loadLists(); loadMemories(); loadCalendar();
   </script>
 </body>
 </html>

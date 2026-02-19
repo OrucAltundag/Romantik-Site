@@ -85,8 +85,19 @@
     .error{ color:#ff6b6b; font-size:14px; margin-top:8px; }
     .success{ color:#69db7c; font-size:14px; margin-top:8px; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-db.js"></script>
 </head>
 <body>
+  <script>
+    try {
+      if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('BURAYA') && typeof firebase !== 'undefined') {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+    } catch (e) { console.warn('Firebase init:', e); }
+  </script>
   <div class="wrap">
     <section class="hero">
       <div class="hearts" id="hearts"></div>
@@ -104,7 +115,7 @@
 
       <div id="dashboardSection" style="display:none;">
         <h1>İçerik Düzenle 💝</h1>
-        <p>Değişiklikler ana sayfada görünür. Kaydet butonuna bas.</p>
+        <p>Değişiklikler ana sayfada görünür ve Firebase ile kalıcı olarak saklanır. Kaydet butonuna bas.</p>
 
         <div class="card">
           <h2 style="margin:0 0 8px; font-size:17px;">💡 İpucu mesajı</h2>
@@ -137,9 +148,6 @@
     const ADMIN_USER = "origi";
     const ADMIN_PASS = "6868";
     const ADMIN_SESSION_KEY = "romantik_admin_logged";
-    const ADMIN_HINT_KEY = "romantik_admin_hint";
-    const ADMIN_NOTES_KEY = "romantik_admin_notes";
-    const ADMIN_TAHMIN_KEY = "romantik_admin_tahmin_cevap";
 
     const loginSection = document.getElementById("loginSection");
     const dashboardSection = document.getElementById("dashboardSection");
@@ -190,16 +198,19 @@
       }
     });
 
-    function loadData() {
-      hintInput.value = localStorage.getItem(ADMIN_HINT_KEY) || "";
-      tahminCevapInput.value = localStorage.getItem(ADMIN_TAHMIN_KEY) || "";
-      notesInput.value = localStorage.getItem(ADMIN_NOTES_KEY) || "";
+    async function loadData() {
+      const cfg = await getSiteConfig();
+      hintInput.value = cfg.hint || "";
+      tahminCevapInput.value = cfg.tahminCevap || "";
+      notesInput.value = cfg.notes || "";
     }
 
-    saveBtn.addEventListener("click", () => {
-      localStorage.setItem(ADMIN_HINT_KEY, hintInput.value.trim());
-      localStorage.setItem(ADMIN_TAHMIN_KEY, tahminCevapInput.value.trim());
-      localStorage.setItem(ADMIN_NOTES_KEY, notesInput.value.trim());
+    saveBtn.addEventListener("click", async () => {
+      await setSiteConfig({
+        hint: hintInput.value.trim(),
+        tahminCevap: tahminCevapInput.value.trim(),
+        notes: notesInput.value.trim()
+      });
       saveMsg.style.display = "block";
       setTimeout(() => { saveMsg.style.display = "none"; }, 2500);
     });
