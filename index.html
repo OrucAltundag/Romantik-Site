@@ -240,15 +240,79 @@
       to{ transform: translateY(100vh) rotate(720deg); opacity:0; }
     }
 
-    /* Papatya yaprakları */
-    .papatyaYaprak{
-      display:inline-block; padding:8px 14px; margin:4px;
-      border-radius:20px; background:linear-gradient(135deg, #69db7c, #51cf66);
-      color:#1a1a2e; font-size:13px; font-weight:600; cursor:pointer;
-      transition:transform .3s, opacity .4s; box-shadow:0 2px 8px rgba(0,0,0,.2);
-    }
-    .papatyaYaprak:hover{ transform:scale(1.08); }
-    .papatyaYaprak.dustu{ opacity:0; transform:translateY(20px) scale(0.5); pointer-events:none; }
+    /* Papatya - Seviyor Sevmiyor */
+    .papatyaContainer{ position:relative; width:200px; height:200px; margin:0 auto 20px; }
+    .papatyaCenter{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:56px; height:56px; background:radial-gradient(circle at 30% 30%, #ffd43b, #f59f00); border-radius:50%; box-shadow:0 0 20px rgba(255,212,59,.5), inset 0 -4px 8px rgba(0,0,0,.2); display:flex; align-items:center; justify-content:center; font-size:20px; z-index:2; }
+    .papatyaPetalWrap{ position:absolute; left:50%; top:50%; width:100%; height:100%; transform:translate(-50%,-50%); }
+    .papatyaPetal{ position:absolute; left:50%; top:50%; width:32px; height:48px; margin-left:-16px; margin-top:-24px; background:linear-gradient(180deg, #fff 0%, #f8f9fa 50%, #e9ecef 100%); border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; box-shadow:0 2px 8px rgba(0,0,0,.15); cursor:pointer; transition:transform .2s; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#495057; text-shadow:0 0 1px #fff; transform-origin:center bottom; z-index:1; }
+    .papatyaPetal:hover{ transform:scale(1.1); }
+    .papatyaPetal.dustu{ animation:patalDus .75s cubic-bezier(0.34,1.2,0.64,1) forwards; pointer-events:none; z-index:0; }
+    @keyframes patalDus{ 0%{ opacity:1; transform:translate(-50%,-50%) translateY(0) rotate(var(--r,0deg)); } 40%{ opacity:1; transform:translate(-50%,-50%) translateY(12px) rotate(calc(var(--r,0deg) + 15deg)) scale(0.95); } 100%{ opacity:0; transform:translate(-50%,-50%) translateY(100px) rotate(calc(var(--r,0deg) + 35deg)) scale(0.4); } }
+    @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
+    .papatyaHint{ font-size:13px; color:var(--muted); margin-bottom:16px; text-align:center; }
+
+    /* Eşleştirme Oyunu */
+    .memoryGameBox{ max-width:700px; width:100%; background:linear-gradient(145deg, rgba(40,20,50,.95), rgba(20,15,35,.98)); border-radius:20px; border:1px solid var(--border); padding:24px; }
+    .memoryGameHeader{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .memoryScoreBar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:10px 14px; background:rgba(255,255,255,.06); border-radius:14px; }
+    .memScore{ font-weight:600; opacity:.6; transition:opacity .2s; }
+    .memScore.memActive{ opacity:1; color:var(--accent); }
+    #memoryCardGrid{ display:grid; gap:8px; grid-template-columns:repeat(5, 1fr); }
+    .memCard{ aspect-ratio:1; border-radius:12px; border:2px solid var(--border); background:linear-gradient(135deg, var(--accent) 20%, var(--accent2)); cursor:pointer; overflow:hidden; position:relative; transform-style:preserve-3d; perspective:800px; }
+    .memCard .memInner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .5s cubic-bezier(0.4,0,0.2,1); }
+    .memCard.flipped .memInner, .memCard.matched .memInner{ transform:rotateY(180deg); }
+    .memCard:hover:not(.flipped):not(.matched){ transform:scale(1.03); }
+    .memCard{ transition:transform .2s; }
+    .memCard .memBack, .memCard .memFront{ position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:flex; align-items:center; justify-content:center; }
+    .memCard .memBack{ background:linear-gradient(135deg, var(--accent) 20%, var(--accent2)); font-size:28px; }
+    .memCard .memFront{ transform:rotateY(180deg); }
+    .memCard .memFront img{ width:100%; height:100%; object-fit:cover; }
+    .memCard.flipped, .memCard.matched{ cursor:default; }
+    .memCard.matched{ border-color:#69db7c; box-shadow:0 0 20px rgba(105,219,124,.3); }
+    .memCard.entering{ animation:memCardEnter .4s cubic-bezier(0.34,1.56,0.64,1) backwards; }
+    @keyframes memCardEnter{ from{ opacity:0; transform:scale(0.5); } to{ opacity:1; transform:scale(1); } }
+
+    /* Tokmak Oyunu */
+    .whackGameBox{ max-width:520px; width:100%; background:linear-gradient(145deg, rgba(40,20,50,.95), rgba(20,15,35,.98)); border-radius:20px; border:1px solid var(--border); padding:24px; }
+    .whackGameHeader{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .whackScoreBar{ display:flex; justify-content:space-between; margin-bottom:16px; padding:10px 14px; background:rgba(255,255,255,.06); border-radius:14px; font-weight:600; }
+    #whackHolesGrid{ display:grid; gap:12px; grid-template-columns:repeat(3, 1fr); min-height:280px; }
+    .whackHole{ aspect-ratio:1; border-radius:50%; background:linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%); border:4px solid rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor:pointer; }
+    .whackHole.square{ border-radius:16px; }
+    .whackHole .whackFace{ position:absolute; inset:8px; border-radius:50%; opacity:0; transform:translateY(100%) scale(0.3); transition:opacity .12s, transform .18s; pointer-events:none; will-change:transform,opacity; contain:paint; }
+    .whackHole .whackFace.up{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; cursor:pointer; animation:whackFacePop .22s cubic-bezier(0.34,1.56,0.64,1); }
+    .whackHole .whackFace.hit{ animation:whackFaceHit .18s cubic-bezier(0.4,0,0.2,1) forwards; pointer-events:none; will-change:transform,opacity; }
+    .whackHole .whackFace.runaway{ animation:whackFaceRun .16s cubic-bezier(0.4,0,0.6,1) forwards; pointer-events:none; will-change:transform,opacity; }
+    @keyframes whackFacePop{ from{ opacity:0; transform:translateY(80%) scale(0.4); } to{ opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes whackFaceHit{ 0%{ transform:scale(1); opacity:1; } 45%{ transform:scale(1.15); opacity:1; } 100%{ opacity:0; transform:scale(0.35); } }
+    @keyframes whackFaceRun{ 0%{ transform:translateY(0) scale(1); opacity:1; } 100%{ opacity:0; transform:translateY(-55%) scale(0.5); } }
+    .whackHole.square .whackFace{ border-radius:12px; }
+    .whackFace{ box-shadow:0 0 0 3px rgba(255,255,255,.25), 0 15px 45px rgba(0,0,0,.5), inset 0 2px 8px rgba(255,255,255,.15); border-radius:50%; background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.2), transparent 60%); }
+    .whackFace img{ width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block; }
+    .whackFace.up{ box-shadow:0 0 0 4px rgba(255,255,255,.3), 0 20px 50px rgba(0,0,0,.5), 0 0 40px rgba(255,77,141,.2), inset 0 2px 10px rgba(255,255,255,.2); }
+    #whackMallet{ position:fixed; left:0; top:0; width:0; height:0; pointer-events:none; z-index:99998; will-change:transform; display:none; transform:translate(calc(var(--mx,0) * 1px), calc(var(--my,0) * 1px)) translate(-50%,-50%); }
+    #whackMallet img{ width:140px; height:auto; display:block; filter:drop-shadow(0 12px 28px rgba(0,0,0,.5)); transform-origin:center center; transform:rotate(-30deg); }
+    #whackMallet.whackSwing img{ animation:whackSwingImg .14s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes whackSwingImg{ 0%{ transform:rotate(-30deg) scale(1); } 35%{ transform:rotate(18deg) scale(1.12); } 100%{ transform:rotate(-30deg) scale(1); } }
+
+    /* Ben Seni Ne Kadar Tanıyorum */
+    .tanirQuizBox{ max-width:560px; width:100%; background:linear-gradient(145deg, rgba(40,20,50,.95), rgba(20,15,35,.98)); border-radius:20px; border:1px solid var(--border); padding:24px; }
+    .tanirQuizHeader{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .tanirQuizProgress{ margin-bottom:12px; font-weight:600; color:var(--accent); }
+    .tanirAnswersGrid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:520px){ .tanirAnswersGrid{ grid-template-columns:1fr; } }
+    .tanirAnswerCard{ padding:16px; background:rgba(255,255,255,.06); border-radius:16px; border:1px solid var(--border); }
+    .tanirPlayerLabel{ display:block; font-size:12px; font-weight:700; color:var(--accent); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+    .tanirQuestionText{ font-size:15px; margin:0 0 12px; color:var(--txt); line-height:1.4; min-height:40px; }
+    .tanirInputWrap{ position:relative; margin-bottom:10px; }
+    .tanirInputWrap input{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); font-size:16px; box-sizing:border-box; }
+    .tanirInputWrap input[data-mask]{ color:transparent; caret-color:var(--accent); }
+    .tanirInputWrap input[data-mask]::placeholder{ color:rgba(255,255,255,.4); }
+    .tanirStars{ position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--accent); font-size:18px; letter-spacing:2px; }
+    .tanirOnayla{ width:100%; padding:10px; border-radius:12px; background:rgba(255,255,255,.1); border:1px solid var(--border); color:var(--txt); font-weight:600; cursor:pointer; transition:.2s; }
+    .tanirOnayla:hover{ background:rgba(255,255,255,.15); }
+    .tanirOnayla.confirmed{ background:rgba(105,219,124,.2); border-color:#69db7c; color:#69db7c; }
+    .tanirReveal{ font-weight:600; color:var(--accent); padding:12px; background:rgba(255,77,141,.15); border-radius:12px; margin:0; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -373,9 +437,9 @@
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 10px; font-size:16px">🎮 Tatlı Oyunlar</h3>
       <div class="btns">
-        <button class="primary" id="gameQuizBtn">Quiz: Ben seni ne kadar tanıyorum?</button>
-        <button id="gameBenSenBtn">Bu cümle kimin?</button>
-        <button id="gameEvetHayirBtn">Evet / Hayır kaçan buton 😄</button>
+        <button class="primary" id="gameMemoryBtn">🃏 Eşleştirme Oyunu (2 Kişilik)</button>
+        <button id="gameWhackBtn">🔨 Tokmak Oyunu</button>
+        <button id="gameQuizBtn">Quiz: Ben seni ne kadar tanıyorum?</button>
       </div>
     </section>
 
@@ -435,6 +499,18 @@
 
   <div id="confettiWrap"></div>
 
+  <!-- Sürpriz şifre modal -->
+  <div class="modalOverlay" id="surprisePasswordModal">
+    <div class="modalBox" style="max-width:320px;">
+      <h3>🔐 Sürprizi Aç</h3>
+      <p style="margin:0 0 12px; color:var(--muted); font-size:14px;">Şifreyi gir:</p>
+      <input type="password" id="surprisePasswordInput" placeholder="Şifre" maxlength="10" autocomplete="off" style="margin-bottom:8px;">
+      <p id="surprisePasswordError" style="display:none; color:#ff6b6b; font-size:13px; margin:0 0 8px;">Yanlış şifre</p>
+      <button class="modalClose" id="surprisePasswordBtn">Aç</button>
+      <button id="surprisePasswordClose" style="margin-top:8px; width:100%; background:transparent; border:1px solid var(--border);">İptal</button>
+    </div>
+  </div>
+
   <!-- Liste item modal -->
   <div class="modalOverlay" id="listItemModal">
     <div class="modalBox" style="max-width:400px;">
@@ -467,27 +543,48 @@
     </div>
   </div>
 
-  <!-- Quiz modal -->
-  <div class="modalOverlay" id="quizModal">
-    <div class="modalBox" style="max-width:440px;">
-      <h3>Ben seni ne kadar tanıyorum?</h3>
-      <p id="quizQuestion" style="margin:12px 0;"></p>
-      <div id="quizChoices"></div>
-      <p id="quizResult" style="display:none; margin-top:12px; font-weight:600;"></p>
-      <button class="modalClose" id="quizNextBtn" style="display:none;">Sonraki</button>
-    </div>
-  </div>
-
-  <!-- Ben mi Sen mi modal -->
-  <div class="modalOverlay" id="benSenModal">
-    <div class="modalBox">
-      <h3>Bu cümle kimin?</h3>
-      <p id="benSenText" style="font-size:18px; margin:20px 0;"></p>
-      <div class="btns">
-        <button class="primary" id="benSenBen">Ben</button>
-        <button id="benSenSen" class="benSenOther">Sevgilim</button>
+  <!-- Quiz modal - Ben Seni Ne Kadar Tanıyorum -->
+  <div class="modalOverlay" id="quizModal" style="align-items:flex-start; padding:20px; overflow-y:auto;">
+    <div class="tanirQuizBox">
+      <div class="tanirQuizHeader">
+        <h3 style="margin:0;">💕 Ben Seni Ne Kadar Tanıyorum?</h3>
+        <button id="quizCloseBtn" style="padding:6px 12px; font-size:14px;">✕ Kapat</button>
       </div>
-      <p id="benSenResult" style="margin-top:12px;"></p>
+      <div id="tanirQuizStart">
+        <p style="color:var(--muted); margin:0 0 20px;">Sibel ve Oruç olarak birbirinizi ne kadar tanıdığınızı test edin. Her tur 5 soru, cevaplarınızı yıldızlı göreceksiniz. İkiniz de onaylayınca ortaya çıkacak!</p>
+        <button class="primary" id="tanirQuizStartBtn" style="width:100%; padding:14px;">Oyunu Başlat</button>
+      </div>
+      <div id="tanirQuizPlay" style="display:none;">
+        <div class="tanirQuizProgress">
+          <span id="tanirQuestionNum">Soru 1/5</span>
+        </div>
+        <div class="tanirAnswersGrid">
+          <div class="tanirAnswerCard">
+            <label class="tanirPlayerLabel">Sibel</label>
+            <p id="tanirSibelQuestion" class="tanirQuestionText"></p>
+            <div class="tanirInputWrap">
+              <input type="text" id="tanirSibelInput" placeholder="Cevabını yaz..." autocomplete="off" data-mask>
+              <span class="tanirStars" id="tanirSibelStars" aria-hidden="true"></span>
+            </div>
+            <button class="tanirOnayla" id="tanirSibelOnayla">Onayla</button>
+            <p id="tanirSibelReveal" class="tanirReveal" style="display:none;"></p>
+          </div>
+          <div class="tanirAnswerCard">
+            <label class="tanirPlayerLabel">Oruç</label>
+            <p id="tanirOrucQuestion" class="tanirQuestionText"></p>
+            <div class="tanirInputWrap">
+              <input type="text" id="tanirOrucInput" placeholder="Cevabını yaz..." autocomplete="off" data-mask>
+              <span class="tanirStars" id="tanirOrucStars" aria-hidden="true"></span>
+            </div>
+            <button class="tanirOnayla" id="tanirOrucOnayla">Onayla</button>
+            <p id="tanirOrucReveal" class="tanirReveal" style="display:none;"></p>
+          </div>
+        </div>
+        <div id="tanirQuizActions" style="margin-top:20px; display:none;">
+          <button class="primary" id="tanirNextBtn" style="width:100%; padding:14px;">Sonraki Soru</button>
+          <button class="primary" id="tanirPlayAgainBtn" style="width:100%; padding:14px; display:none;">Tekrar Oyna</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -506,27 +603,117 @@
 
   <!-- Sürpriz Aşk Kutusu - Sayfa 2: Papatya -->
   <div class="modalOverlay" id="askKutuPapatyaModal">
-    <div class="modalBox" style="text-align:center; max-width:340px;">
-      <h3 style="margin:0 0 20px;">🌼 Papatya Falı</h3>
-      <p style="font-size:14px; color:var(--muted); margin-bottom:16px;">Yapraklara tıkla: Seviyor... Sevmiyor...</p>
-      <div id="papatyaWrap" style="position:relative; min-height:220px; display:flex; flex-direction:column; align-items:center;">
-        <div id="papatyaCicek" style="font-size:48px; margin-bottom:8px;">🌼</div>
-        <div id="papatyaYapraklar"></div>
-        <p id="papatyaSonuc" style="display:none; margin-top:16px; font-size:20px; font-weight:700; color:var(--accent);">Seviyor! 💕</p>
+    <div class="modalBox" style="text-align:center; max-width:380px;">
+      <h3 style="margin:0 0 12px;">🌼 Papatya Falı</h3>
+      <p class="papatyaHint">Yapraklara tek tek dokun... Son yaprak ne diyor? 💕</p>
+      <div id="papatyaWrap" style="min-height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="papatyaContainer">
+          <div class="papatyaCenter">🌼</div>
+          <div class="papatyaPetalWrap" id="papatyaYapraklar"></div>
+        </div>
+        <p id="papatyaSonuc" style="display:none; margin-top:8px; font-size:22px; font-weight:700; color:var(--accent); animation:pulse 1s ease;">Seviyor! 💕</p>
       </div>
       <button class="modalClose" id="papatyaKapat" style="display:none;">Kapat</button>
     </div>
   </div>
 
-  <!-- Evet/Hayır modal -->
-  <div class="modalOverlay" id="evetHayirModal">
-    <div class="modalBox" style="text-align:center;">
-      <h3>Bugün bana bir öpücük borcun var mı? 😄</h3>
-      <div id="evetHayirWrap" style="position:relative; margin:24px 0; min-height:100px; display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
-        <button class="primary" id="evetBtn">Evet 💕</button>
-        <button id="hayirBtn" style="transition:all .12s; position:relative;">Hayır</button>
+  <!-- Eşleştirme Oyunu -->
+  <div class="modalOverlay" id="memoryGameModal" style="align-items:flex-start; padding:20px; overflow-y:auto;">
+    <div class="memoryGameBox">
+      <div class="memoryGameHeader">
+        <h3 style="margin:0;">🃏 Eşleştirme Oyunu</h3>
+        <button id="memoryGameClose" style="padding:6px 12px; font-size:14px;">✕ Kapat</button>
+      </div>
+      <div id="memoryGameSetup">
+        <p style="margin:0 0 12px; color:var(--muted);">Oyuncu adlarını girin ve çift sayısını seçin (min 10).</p>
+        <div style="display:grid; gap:12px; max-width:320px;">
+          <input type="text" id="memP1Name" placeholder="1. Oyuncu adı" value="Sibel">
+          <input type="text" id="memP2Name" placeholder="2. Oyuncu adı" value="Oruç">
+          <div>
+            <label style="font-size:13px; color:var(--muted);">Çift sayısı:</label>
+            <select id="memPairCount" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); margin-top:6px;">
+              <option value="10">10 çift (20 kart)</option>
+              <option value="12">12 çift (24 kart)</option>
+              <option value="14">14 çift (28 kart)</option>
+              <option value="16">16 çift (32 kart)</option>
+              <option value="18">18 çift (36 kart)</option>
+              <option value="20">20 çift (40 kart)</option>
+            </select>
+          </div>
+          <p id="memStats" style="font-size:13px; color:var(--muted); margin:0;">Toplam: 0 - 0</p>
+          <button class="primary" id="memStartBtn">Oyunu Başlat</button>
+        </div>
+      </div>
+      <div id="memoryGamePlay" style="display:none;">
+        <div class="memoryScoreBar">
+          <div id="memP1Score" class="memScore memActive">Sibel: 0</div>
+          <div id="memTurnIndicator">Sıra: Sibel</div>
+          <div id="memP2Score" class="memScore">Oruç: 0</div>
+        </div>
+        <div id="memoryCardGrid"></div>
+        <div id="memoryGameOver" style="display:none; text-align:center; margin-top:20px; padding:24px; background:rgba(255,255,255,.06); border-radius:16px;">
+          <p style="font-size:24px; margin:0 0 8px;">Tebrikler! 🎉</p>
+          <p id="memWinnerText" style="font-size:20px; font-weight:700; color:var(--accent);"></p>
+          <button class="primary" id="memPlayAgainBtn" style="margin-top:12px;">Tekrar Oyna</button>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- Tokmak Oyunu -->
+  <div class="modalOverlay" id="whackGameModal" style="align-items:flex-start; padding:20px; overflow:hidden;">
+    <div class="whackGameBox">
+      <div class="whackGameHeader">
+        <h3 style="margin:0;">🔨 Tokmak Oyunu</h3>
+        <button id="whackGameClose" style="padding:6px 12px; font-size:14px;">✕ Kapat</button>
+      </div>
+      <div id="whackGameSetup">
+        <p style="margin:0 0 12px; color:var(--muted);">Bölme sayısı ve şeklini seçin.</p>
+        <div style="display:grid; gap:12px; max-width:320px;">
+          <div>
+            <label style="font-size:13px; color:var(--muted);">Bölme sayısı (3-9):</label>
+            <select id="whackHoleCount" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); margin-top:6px;">
+              <option value="3">3 bölme</option>
+              <option value="4">4 bölme</option>
+              <option value="5">5 bölme</option>
+              <option value="6">6 bölme</option>
+              <option value="7">7 bölme</option>
+              <option value="8">8 bölme</option>
+              <option value="9">9 bölme</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:13px; color:var(--muted);">Bölme şekli:</label>
+            <select id="whackShape" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); margin-top:6px;">
+              <option value="round">Yuvarlak</option>
+              <option value="square">Kare</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:13px; color:var(--muted);">Hedef vuruş (1 dk içinde):</label>
+            <select id="whackTarget" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); margin-top:6px;">
+              <option value="3">3 vuruş</option>
+              <option value="5">5 vuruş</option>
+              <option value="7">7 vuruş</option>
+            </select>
+          </div>
+          <button class="primary" id="whackStartBtn">Oyunu Başlat</button>
+        </div>
+      </div>
+      <div id="whackGamePlay" style="display:none;">
+        <div class="whackScoreBar">
+          <span id="whackScoreText">Skor: 0 / 5</span>
+          <span id="whackTimeText">⏱ 60</span>
+        </div>
+        <div id="whackHolesGrid"></div>
+        <div id="whackGameOver" style="display:none; text-align:center; margin-top:20px; padding:24px; background:rgba(255,255,255,.06); border-radius:16px;">
+          <p id="whackGameOverTitle" style="font-size:24px; margin:0 0 8px;"></p>
+          <p id="whackFinalScore" style="font-size:20px; font-weight:700; color:var(--accent);"></p>
+          <button class="primary" id="whackPlayAgainBtn" style="margin-top:12px;">Tekrar Oyna</button>
+        </div>
+      </div>
+    </div>
+    <div id="whackMallet"><img src="TokmakOyunu/tokmak.png" alt=""></div>
   </div>
 
   <script>
@@ -582,6 +769,12 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         bg2: "#2a0f2f"
       },
 
+      // Eşleştirme oyunu — OyunResimleri/ klasörüne 1.jpg, 2.jpg, ... ekleyin
+      memoryGameFolder: "OyunResimleri",
+      memoryGameMaxPairs: 20,
+
+      // Tokmak oyunu — TokmakOyunu/ klasörüne face.jpg ve face2.jpg ekleyin (rastgele seçilir)
+
       // Foto galerisi
       photos: [
         { src: "Resimler/Resim1.jpeg", caption: "Birtanem 💞" },
@@ -630,12 +823,31 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     surpriseImg.src = CONFIG.surprisePhoto?.src || "";
     surpriseCap.textContent = CONFIG.surprisePhoto?.caption || "";
 
+    const SURPRISE_PASSWORD = "6827";
+    const surprisePasswordModal = document.getElementById("surprisePasswordModal");
+    const surprisePasswordInput = document.getElementById("surprisePasswordInput");
+    const surprisePasswordBtn = document.getElementById("surprisePasswordBtn");
+    const surprisePasswordError = document.getElementById("surprisePasswordError");
     document.getElementById("surpriseBtn").addEventListener("click", () => {
-      const show = surprise.style.display === "none";
-      surprise.style.display = show ? "block" : "none";
-      surpriseMedia.style.display = show ? "block" : "none";
-      if (show) burstHearts();
+      surprisePasswordModal.classList.add("open");
+      surprisePasswordInput.value = "";
+      surprisePasswordError.style.display = "none";
+      setTimeout(() => surprisePasswordInput.focus(), 100);
     });
+    surprisePasswordBtn.addEventListener("click", () => {
+      if (surprisePasswordInput.value.trim() === SURPRISE_PASSWORD) {
+        surprisePasswordModal.classList.remove("open");
+        const show = surprise.style.display === "none";
+        surprise.style.display = show ? "block" : "none";
+        surpriseMedia.style.display = show ? "block" : "none";
+        if (show) burstHearts();
+      } else {
+        surprisePasswordError.style.display = "block";
+      }
+    });
+    surprisePasswordInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); surprisePasswordBtn.click(); } });
+    document.getElementById("surprisePasswordClose").onclick = () => surprisePasswordModal.classList.remove("open");
+    surprisePasswordModal.addEventListener("click", e => { if (e.target.id === "surprisePasswordModal") surprisePasswordModal.classList.remove("open"); });
 
     // İpucu butonu — hoş modal ile (Firebase/localStorage)
     const hintBtn = document.getElementById("hintBtn");
@@ -726,7 +938,7 @@ ${CONFIG.surpriseText}`;
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = CONFIG.photos.map(p => `
       <div class="ph">
-        <img src="${p.src}" alt="">
+        <img src="${p.src}" alt="" loading="lazy">
         <div class="cap">${escapeHtml(p.caption || "")}</div>
       </div>
     `).join("");
@@ -896,8 +1108,267 @@ ${CONFIG.surpriseText}`;
     document.getElementById("memoryModal").addEventListener("click", e => { if (e.target.id === "memoryModal") e.target.classList.remove("open"); });
     document.getElementById("calendarModal").addEventListener("click", e => { if (e.target.id === "calendarModal") e.target.classList.remove("open"); });
     document.getElementById("quizModal").addEventListener("click", e => { if (e.target.id === "quizModal") e.target.classList.remove("open"); });
-    document.getElementById("benSenModal").addEventListener("click", e => { if (e.target.id === "benSenModal") e.target.classList.remove("open"); });
-    document.getElementById("evetHayirModal").addEventListener("click", e => { if (e.target.id === "evetHayirModal") e.target.classList.remove("open"); });
+
+    // Yıldızlı input sync
+    function setupTanirMask(inputEl, starsEl) {
+      function sync() { starsEl.textContent = "★".repeat(inputEl.value.length); }
+      inputEl.addEventListener("input", sync);
+      inputEl.addEventListener("paste", () => setTimeout(sync, 0));
+    }
+    // ========== EŞLEŞTİRME OYUNU ==========
+    const MEM_STATS_KEY = "romantik_memory_wins";
+    function getMemStats() { try { return JSON.parse(localStorage.getItem(MEM_STATS_KEY) || '{"p1":0,"p2":0}'); } catch { return {p1:0,p2:0}; } }
+    function setMemStats(s) { localStorage.setItem(MEM_STATS_KEY, JSON.stringify(s)); }
+    document.getElementById("gameMemoryBtn").onclick = () => {
+      const s = getMemStats();
+      document.getElementById("memStats").textContent = "Toplam kazanma: " + s.p1 + " - " + s.p2;
+      document.getElementById("memoryGameSetup").style.display = "block";
+      document.getElementById("memoryGamePlay").style.display = "none";
+      document.getElementById("memoryGameModal").classList.add("open");
+    };
+    document.getElementById("memoryGameClose").onclick = () => document.getElementById("memoryGameModal").classList.remove("open");
+    let memState = { cards: [], flipped: [], currentPlayer: 1, scores: [0,0], pairCount: 10 };
+    const memFolder = CONFIG.memoryGameFolder || "OyunResimleri";
+    const memMax = CONFIG.memoryGameMaxPairs || 20;
+    function getImagePath(n, ext) { return memFolder + "/" + n + (ext || ".jpg"); }
+    document.getElementById("memStartBtn").onclick = () => {
+      const p1 = document.getElementById("memP1Name").value.trim() || "Oyuncu 1";
+      const p2 = document.getElementById("memP2Name").value.trim() || "Oyuncu 2";
+      const pairs = parseInt(document.getElementById("memPairCount").value) || 10;
+      memState.p1Name = p1; memState.p2Name = p2;
+      memState.currentPlayer = 1; memState.scores = [0,0]; memState.flipped = []; memState.pairCount = pairs;
+      const ids = [];
+      for (let i = 1; i <= pairs; i++) ids.push(i, i);
+      for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+      memState.cards = ids.map((id, idx) => ({ id, idx }));
+      document.getElementById("memoryGameSetup").style.display = "none";
+      document.getElementById("memoryGamePlay").style.display = "block";
+      document.getElementById("memoryGameOver").style.display = "none";
+      document.getElementById("memP1Score").textContent = p1 + ": 0";
+      document.getElementById("memP2Score").textContent = p2 + ": 0";
+      document.getElementById("memP1Score").classList.add("memActive");
+      document.getElementById("memP2Score").classList.remove("memActive");
+      document.getElementById("memTurnIndicator").textContent = "Sıra: " + p1;
+      const grid = document.getElementById("memoryCardGrid");
+      const cols = pairs <= 12 ? 4 : pairs <= 20 ? 5 : 6;
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      grid.innerHTML = memState.cards.map((c, i) => `
+        <div class="memCard entering" data-idx="${i}" style="animation-delay:${i*0.03}s">
+          <div class="memInner">
+            <div class="memBack">🃏</div>
+            <div class="memFront"><img src="${getImagePath(c.id)}" alt="" onerror="if(this.src.endsWith('.jpg')){this.src='${memFolder}/'+${c.id}+'.png'}else{this.style.background='#333';this.alt='?'}"></div>
+          </div>
+        </div>
+      `).join("");
+      memState.isProcessing = false;
+      grid.querySelectorAll(".memCard").forEach(el => {
+        el.classList.remove("flipped", "matched");
+        el.onclick = () => {
+          if (memState.isProcessing) return;
+          const idx = parseInt(el.dataset.idx);
+          if (el.classList.contains("flipped") || el.classList.contains("matched") || memState.flipped.length >= 2) return;
+          if (memState.flipped.length === 1 && memState.flipped[0].idx === idx) return;
+          el.classList.add("flipped");
+          memState.flipped.push({ idx, el });
+          if (memState.flipped.length === 2) {
+            memState.isProcessing = true;
+            const [a, b] = memState.flipped;
+            const isMatch = memState.cards[a.idx].id === memState.cards[b.idx].id;
+            if (isMatch) {
+              a.el.classList.add("matched");
+              b.el.classList.add("matched");
+              memState.scores[memState.currentPlayer - 1]++;
+              document.getElementById("memP1Score").textContent = memState.p1Name + ": " + memState.scores[0];
+              document.getElementById("memP2Score").textContent = memState.p2Name + ": " + memState.scores[1];
+              memState.flipped = [];
+              memState.isProcessing = false;
+              const total = memState.pairCount;
+              if (memState.scores[0] + memState.scores[1] === total) {
+                setTimeout(() => {
+                  const stats = getMemStats();
+                  let winText = "";
+                  if (memState.scores[0] > memState.scores[1]) { stats.p1++; winText = memState.p1Name + " kazandı! 🏆"; }
+                  else if (memState.scores[1] > memState.scores[0]) { stats.p2++; winText = memState.p2Name + " kazandı! 🏆"; }
+                  else winText = "Berabere! 🤝";
+                  document.getElementById("memWinnerText").textContent = winText;
+                  setMemStats(stats);
+                  document.getElementById("memoryGameOver").style.display = "block";
+                }, 500);
+              }
+            } else {
+              setTimeout(() => {
+                a.el.classList.remove("flipped");
+                b.el.classList.remove("flipped");
+                memState.currentPlayer = memState.currentPlayer === 1 ? 2 : 1;
+                document.getElementById("memP1Score").classList.toggle("memActive", memState.currentPlayer === 1);
+                document.getElementById("memP2Score").classList.toggle("memActive", memState.currentPlayer === 2);
+                document.getElementById("memTurnIndicator").textContent = "Sıra: " + (memState.currentPlayer === 1 ? memState.p1Name : memState.p2Name);
+                memState.flipped = [];
+                memState.isProcessing = false;
+              }, 700);
+            }
+          }
+        };
+      });
+    };
+    document.getElementById("memPlayAgainBtn").onclick = () => {
+      document.getElementById("memoryGamePlay").style.display = "none";
+      document.getElementById("memoryGameSetup").style.display = "block";
+      document.getElementById("memStats").textContent = "Toplam kazanma: " + getMemStats().p1 + " - " + getMemStats().p2;
+    };
+
+    // ========== TOKMAK OYUNU ==========
+    const whackFaceSrcs = ["TokmakOyunu/face.jpg", "TokmakOyunu/face2.jpg"];
+    function getRandomFaceSrc() { return whackFaceSrcs[Math.floor(Math.random() * whackFaceSrcs.length)]; }
+    let whackState = { score: 0, timeLeft: 60, target: 5, activeIdx: -1, timerId: null, appearId: null, hideId: null, playing: false, malletMove: null, lastRunCheck: 0, holes: 6 };
+    const whackMallet = document.getElementById("whackMallet");
+    const WHACK_FACE_VISIBLE = 650; const WHACK_FACE_MAX = 950; const WHACK_GAP_MIN = 280; const WHACK_GAP_MAX = 450; const WHACK_RUN_CHANCE = 0.32; const WHACK_RUN_DIST = 95; const WHACK_RUN_THROTTLE = 150;
+    document.getElementById("gameWhackBtn").onclick = () => {
+      document.getElementById("whackGameSetup").style.display = "block";
+      document.getElementById("whackGamePlay").style.display = "none";
+      document.getElementById("whackGameModal").classList.add("open");
+    };
+    document.getElementById("whackGameClose").onclick = () => {
+      stopWhackGame();
+      if (whackState.malletRAF) cancelAnimationFrame(whackState.malletRAF);
+      if (whackState.malletMove) document.getElementById("whackGameModal").removeEventListener("mousemove", whackState.malletMove);
+      document.getElementById("whackGameModal").classList.remove("open");
+      whackMallet.style.display = "none";
+    };
+    function stopWhackGame() {
+      whackState.playing = false;
+      if (whackState.timerId) { clearInterval(whackState.timerId); whackState.timerId = null; }
+      if (whackState.appearId) { clearTimeout(whackState.appearId); whackState.appearId = null; }
+      if (whackState.hideId) { clearTimeout(whackState.hideId); whackState.hideId = null; }
+      document.querySelectorAll(".whackFace").forEach(f => { f.classList.remove("up","hit","runaway"); });
+    }
+    function endWhackGame(won) {
+      stopWhackGame();
+      if (whackState.malletRAF) cancelAnimationFrame(whackState.malletRAF);
+      if (whackState.malletMove) document.getElementById("whackGameModal").removeEventListener("mousemove", whackState.malletMove);
+      whackMallet.style.display = "none";
+      document.getElementById("whackGameOverTitle").textContent = won ? "Tebrikler! Kazandın! 🎉" : "Süre Doldu! 😅";
+      document.getElementById("whackFinalScore").textContent = "Skor: " + whackState.score + " / " + whackState.target;
+      document.getElementById("whackGameOver").style.display = "block";
+    }
+    document.getElementById("whackStartBtn").onclick = () => {
+      const holes = parseInt(document.getElementById("whackHoleCount").value) || 6;
+      const shape = document.getElementById("whackShape").value;
+      const target = parseInt(document.getElementById("whackTarget").value) || 5;
+      whackState.holes = holes; whackState.target = target; whackState.score = 0; whackState.timeLeft = 60;
+      document.getElementById("whackGameSetup").style.display = "none";
+      document.getElementById("whackGamePlay").style.display = "block";
+      document.getElementById("whackGameOver").style.display = "none";
+      const cols = holes <= 4 ? 2 : 3;
+      document.getElementById("whackHolesGrid").style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      document.getElementById("whackHolesGrid").innerHTML = "";
+      for (let i = 0; i < holes; i++) {
+        const hole = document.createElement("div");
+        hole.className = "whackHole" + (shape === "square" ? " square" : "");
+        hole.dataset.idx = i;
+        const src = getRandomFaceSrc();
+        hole.innerHTML = `<div class="whackFace" data-idx="${i}"><img src="${src}" alt="" onerror="var p=this.parentElement;if(this.src.includes('face.jpg')){this.src='TokmakOyunu/face2.jpg'}else if(this.src.includes('face2.jpg')){this.src='TokmakOyunu/face.png'}else{p.innerHTML='😊';p.style.fontSize='48px'}"></div>`;
+        hole.onclick = (e) => {
+          if (!whackState.playing) return;
+          const face = hole.querySelector(".whackFace");
+          if (face.classList.contains("up") && !face.classList.contains("hit")) {
+            face.classList.remove("up"); face.classList.add("hit");
+            whackState.score++;
+            document.getElementById("whackScoreText").textContent = "Skor: " + whackState.score + " / " + whackState.target;
+            whackMallet.classList.add("whackSwing");
+            setTimeout(() => whackMallet.classList.remove("whackSwing"), 140);
+            whackState.activeIdx = -1;
+            if (whackState.hideId) { clearTimeout(whackState.hideId); whackState.hideId = null; }
+            if (whackState.score >= whackState.target) { endWhackGame(true); return; }
+            setTimeout(() => { face.classList.remove("hit"); scheduleNextAppear(); }, 200);
+          }
+        };
+        document.getElementById("whackHolesGrid").appendChild(hole);
+      }
+      whackState.playing = true; whackState.activeIdx = -1;
+      document.getElementById("whackScoreText").textContent = "Skor: 0 / " + target;
+      document.getElementById("whackTimeText").textContent = "⏱ 60";
+      whackMallet.style.display = "block";
+      whackMallet.style.setProperty("--mx", 0);
+      whackMallet.style.setProperty("--my", 0);
+      whackState.lastRunCheck = 0;
+      whackState.malletRAF = null;
+      whackState.mouseX = 0;
+      whackState.mouseY = 0;
+      whackState.malletMove = function(e) {
+        whackState.mouseX = e.clientX;
+        whackState.mouseY = e.clientY;
+        if (!whackState.malletRAF) {
+          whackState.malletRAF = requestAnimationFrame(function tick() {
+            whackState.malletRAF = null;
+            const rect = document.getElementById("whackGameModal").getBoundingClientRect();
+            if (whackState.mouseX >= rect.left && whackState.mouseX <= rect.right && whackState.mouseY >= rect.top) {
+              whackMallet.style.setProperty("--mx", whackState.mouseX);
+              whackMallet.style.setProperty("--my", whackState.mouseY);
+            }
+            if (!whackState.playing || whackState.activeIdx < 0) return;
+            const now = Date.now();
+            if (now - whackState.lastRunCheck < WHACK_RUN_THROTTLE) return;
+            whackState.lastRunCheck = now;
+            const faceEl = document.querySelector(".whackFace.up");
+            if (!faceEl || faceEl.classList.contains("runaway")) return;
+            const faceRect = faceEl.getBoundingClientRect();
+            const fx = faceRect.left + faceRect.width/2, fy = faceRect.top + faceRect.height/2;
+            const dx = whackState.mouseX - fx, dy = whackState.mouseY - fy;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < WHACK_RUN_DIST && Math.random() < WHACK_RUN_CHANCE) {
+              faceEl.classList.remove("up"); faceEl.classList.add("runaway");
+              if (whackState.hideId) { clearTimeout(whackState.hideId); whackState.hideId = null; }
+              whackState.activeIdx = -1;
+              setTimeout(() => { faceEl.classList.remove("runaway"); scheduleNextAppear(); }, 200);
+            }
+          });
+        }
+      };
+      document.getElementById("whackGameModal").addEventListener("mousemove", whackState.malletMove, { passive: true });
+      function hideAndNext(faceEl) {
+        if (!faceEl || !faceEl.classList.contains("up")) return;
+        faceEl.classList.remove("up");
+        whackState.activeIdx = -1;
+        scheduleNextAppear();
+      }
+      function scheduleNextAppear() {
+        if (whackState.appearId) clearTimeout(whackState.appearId);
+        whackState.appearId = setTimeout(showFace, WHACK_GAP_MIN + Math.random() * (WHACK_GAP_MAX - WHACK_GAP_MIN));
+      }
+      let lastFaceIdx = -1;
+      function showFace() {
+        if (!whackState.playing) return;
+        const allFaces = document.querySelectorAll(".whackFace");
+        let idx = Math.floor(Math.random() * holes);
+        if (holes > 1 && idx === lastFaceIdx) idx = (idx + 1) % holes;
+        lastFaceIdx = idx;
+        const face = allFaces[idx];
+        const img = face.querySelector("img");
+        if (img && img.src) img.src = getRandomFaceSrc();
+        whackState.activeIdx = idx;
+        face.classList.add("up");
+        const visibleTime = WHACK_FACE_VISIBLE + Math.random() * (WHACK_FACE_MAX - WHACK_FACE_VISIBLE);
+        whackState.hideId = setTimeout(() => {
+          whackState.hideId = null;
+          if (face.classList.contains("up")) {
+            face.classList.remove("up");
+            whackState.activeIdx = -1;
+            scheduleNextAppear();
+          }
+        }, visibleTime);
+      }
+      showFace();
+      whackState.timerId = setInterval(() => {
+        whackState.timeLeft--;
+        document.getElementById("whackTimeText").textContent = "⏱ " + whackState.timeLeft;
+        if (whackState.timeLeft <= 0) endWhackGame(false);
+      }, 1000);
+    };
+    document.getElementById("whackPlayAgainBtn").onclick = () => {
+      document.getElementById("whackGamePlay").style.display = "none";
+      document.getElementById("whackGameSetup").style.display = "block";
+    };
 
     // ========== SÜRPRIZ AŞK KUTUSU ==========
     document.getElementById("askKutuBtn").onclick = () => {
@@ -923,8 +1394,7 @@ ${CONFIG.surpriseText}`;
     };
     document.getElementById("seviyorEvetBtn").onclick = () => {
       document.getElementById("seviyorBtnWrap").style.display = "none";
-      const isim = CONFIG.loverName ? (CONFIG.loverName.charAt(0).toUpperCase() + CONFIG.loverName.slice(1).toLowerCase()) : "birtanem";
-      document.getElementById("seviyorSonuc").textContent = "Ben de seni çok seviyorum " + isim + "! 💕";
+      document.getElementById("seviyorSonuc").textContent = "Ben de seni seviyorum birtanemmm! 💕";
       document.getElementById("seviyorSonuc").style.display = "block";
       document.getElementById("seviyorKapat").style.display = "inline-block";
       burstHearts && burstHearts();
@@ -933,19 +1403,28 @@ ${CONFIG.surpriseText}`;
     document.getElementById("askKutuSeviyorModal").addEventListener("click", e => { if (e.target.id === "askKutuSeviyorModal") e.target.classList.remove("open"); });
 
     function openPapatyaModal() {
-      const labels = ["Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor"];
+      const labels = ["Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor","Sevmiyor","Seviyor"];
       const wrap = document.getElementById("papatyaYapraklar");
       wrap.innerHTML = "";
       document.getElementById("papatyaSonuc").style.display = "none";
       document.getElementById("papatyaKapat").style.display = "none";
+      const numPetals = labels.length;
+      const radius = 70;
       labels.forEach((txt, i) => {
-        const y = document.createElement("span");
-        y.className = "papatyaYaprak";
-        y.textContent = txt;
-        y.dataset.idx = i;
-        y.onclick = () => {
-          y.classList.add("dustu");
-          const remain = wrap.querySelectorAll(".papatyaYaprak:not(.dustu)");
+        const deg = (i / numPetals) * 360 - 90;
+        const rad = (deg * Math.PI) / 180;
+        const x = 100 + radius * Math.cos(rad);
+        const y = 100 + radius * Math.sin(rad);
+        const p = document.createElement("div");
+        p.className = "papatyaPetal";
+        p.textContent = txt;
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+        p.style.setProperty("--r", deg + "deg");
+        p.style.transform = `translate(-50%,-50%) rotate(${deg}deg)`;
+        p.onclick = () => {
+          p.classList.add("dustu");
+          const remain = wrap.querySelectorAll(".papatyaPetal:not(.dustu)");
           if (remain.length === 0) {
             document.getElementById("papatyaSonuc").textContent = "Seviyor! 💕";
             document.getElementById("papatyaSonuc").style.display = "block";
@@ -953,7 +1432,7 @@ ${CONFIG.surpriseText}`;
             burstHearts && burstHearts();
           }
         };
-        wrap.appendChild(y);
+        wrap.appendChild(p);
       });
       document.getElementById("askKutuPapatyaModal").classList.add("open");
     }
@@ -963,67 +1442,123 @@ ${CONFIG.surpriseText}`;
     // ========== RANDEVU ÇARKI ==========
     let lastSpin = null; let spinUsed = false;
     document.getElementById("spinDateBtn").onclick = () => {
-      const ideas = getAllDateIdeas();
+      const ideas = getAllDateIdeas() || [];
+      if (!ideas.length) return;
       const pick = ideas[Math.floor(Math.random() * ideas.length)];
+      if (!pick) return;
       lastSpin = pick; spinUsed = false;
       document.getElementById("dateResult").style.display = "block";
-      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}<br>${pick.task ? `Görev: ${pick.task}<br>` : ""}${pick.req ? `Gerekenler: ${pick.req}` : ""}`;
+      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}${pick.task ? `<br>${pick.task}` : ""}${pick.req && pick.req !== "-" ? `<br><small>${pick.req}</small>` : ""}`;
       document.getElementById("spinAgainBtn").style.display = "inline-block";
     };
     document.getElementById("spinAgainBtn").onclick = () => {
       if (spinUsed) { alert("Bugün sadece 1 kez yeniden çevirebilirsin!"); return; }
       spinUsed = true;
-      const ideas = getAllDateIdeas().filter(x => x.title !== lastSpin.title);
-      const pick = ideas[Math.floor(Math.random() * ideas.length)];
-      lastSpin = pick;
-      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}`;
+      const ideas = getAllDateIdeas().filter(x => x && x.title !== lastSpin?.title);
+      const pick = ideas.length > 0 ? ideas[Math.floor(Math.random() * ideas.length)] : lastSpin;
+      if (pick) {
+        lastSpin = pick;
+        document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}${pick.task ? `<br>${pick.task}` : ""}${pick.req && pick.req !== "-" ? `<br><small>${pick.req}</small>` : ""}`;
+      }
     };
 
     // ========== OYUNLAR ==========
-    document.getElementById("gameQuizBtn").onclick = async () => {
-      let quiz = await getCollection("quizData");
-      if (!quiz.length) quiz = DEFAULT_QUIZ;
-      const q = quiz[Math.floor(Math.random() * quiz.length)];
+    // ========== BEN SENİ NE KADAR TANIYORUM ==========
+    let tanirState = { questions: [], index: 0, sibelConfirmed: false, orucConfirmed: false };
+    const tanirSibelInput = document.getElementById("tanirSibelInput");
+    const tanirOrucInput = document.getElementById("tanirOrucInput");
+    const tanirSibelStars = document.getElementById("tanirSibelStars");
+    const tanirOrucStars = document.getElementById("tanirOrucStars");
+    setupTanirMask(tanirSibelInput, tanirSibelStars);
+    setupTanirMask(tanirOrucInput, tanirOrucStars);
+
+    document.getElementById("gameQuizBtn").onclick = () => {
+      document.getElementById("tanirQuizStart").style.display = "block";
+      document.getElementById("tanirQuizPlay").style.display = "none";
       document.getElementById("quizModal").classList.add("open");
-      document.getElementById("quizQuestion").textContent = q.q;
-      document.getElementById("quizChoices").innerHTML = (q.a || []).map((opt, i) => `<button class="modalClose" style="display:block; width:100%; margin:6px 0;" onclick="checkQuiz(${i}, ${q.correct || 0})">${opt}</button>`).join("");
-      document.getElementById("quizResult").style.display = "none";
-      document.getElementById("quizNextBtn").style.display = "none";
     };
-    window.checkQuiz = (selected, correct) => {
-      const el = document.getElementById("quizResult");
-      el.style.display = "block";
-      if (selected === correct) { el.textContent = "Doğru! 💘"; el.style.color = "#69db7c"; burstHearts && burstHearts(); } else { el.textContent = "Yanlış 😅"; el.style.color = "#ffa94d"; }
-      document.getElementById("quizNextBtn").style.display = "block";
-    };
-    document.getElementById("quizNextBtn").onclick = () => document.getElementById("quizModal").classList.remove("open");
+    document.getElementById("quizCloseBtn").onclick = () => document.getElementById("quizModal").classList.remove("open");
 
-    document.getElementById("gameBenSenBtn").onclick = async () => {
-      document.getElementById("benSenSen").textContent = CONFIG.loverName || "Sevgilim";
-      let sent = await getCollection("sentences");
-      if (!sent.length) sent = DEFAULT_SENTENCES;
-      const s = sent[Math.floor(Math.random() * sent.length)];
-      document.getElementById("benSenModal").classList.add("open");
-      document.getElementById("benSenText").textContent = s.text;
-      document.getElementById("benSenResult").textContent = "";
-      document.getElementById("benSenBen").onclick = () => { document.getElementById("benSenResult").textContent = (s.speaker === "ben" ? "Doğru! 💕" : "Yanlış!"); };
-      document.getElementById("benSenSen").onclick = () => { document.getElementById("benSenResult").textContent = (s.speaker === "sen" ? "Doğru! 💕" : "Yanlış!"); };
+    document.getElementById("tanirQuizStartBtn").onclick = () => {
+      tanirState.questions = getRandomTanirQuestions(5);
+      tanirState.index = 0;
+      document.getElementById("tanirQuizStart").style.display = "none";
+      document.getElementById("tanirQuizPlay").style.display = "block";
+      showTanirQuestion();
     };
 
-    document.getElementById("gameEvetHayirBtn").onclick = () => {
-      document.getElementById("evetHayirModal").classList.add("open");
-      const hayir = document.getElementById("hayirBtn");
-      const wrap = document.getElementById("evetHayirWrap");
-      hayir.onmouseenter = () => {
-        const rect = wrap.getBoundingClientRect();
-        hayir.style.position = "absolute";
-        hayir.style.left = (Math.random() * Math.min(200, rect.width - 80)) + "px";
-        hayir.style.top = (Math.random() * Math.min(80, rect.height - 40)) + "px";
-      };
+    function resetTanirQuestion() {
+      tanirState.sibelConfirmed = false;
+      tanirState.orucConfirmed = false;
+      tanirSibelInput.value = "";
+      tanirOrucInput.value = "";
+      tanirSibelStars.textContent = "";
+      tanirOrucStars.textContent = "";
+      document.querySelectorAll(".tanirInputWrap").forEach(el => el.style.display = "");
+      tanirSibelInput.disabled = false;
+      tanirOrucInput.disabled = false;
+      const sibelBtn = document.getElementById("tanirSibelOnayla");
+      const orucBtn = document.getElementById("tanirOrucOnayla");
+      sibelBtn.classList.remove("confirmed");
+      orucBtn.classList.remove("confirmed");
+      sibelBtn.textContent = "Onayla";
+      orucBtn.textContent = "Onayla";
+      sibelBtn.style.display = "";
+      orucBtn.style.display = "";
+      document.getElementById("tanirSibelReveal").style.display = "none";
+      document.getElementById("tanirOrucReveal").style.display = "none";
+      document.getElementById("tanirQuizActions").style.display = "none";
+    }
+
+    function showTanirQuestion() {
+      resetTanirQuestion();
+      const q = tanirState.questions[tanirState.index];
+      if (!q) return;
+      document.getElementById("tanirQuestionNum").textContent = "Soru " + (tanirState.index + 1) + "/5";
+      document.getElementById("tanirSibelQuestion").textContent = q.sibel;
+      document.getElementById("tanirOrucQuestion").textContent = q.oruc;
+    }
+
+    function checkTanirReveal() {
+      if (!tanirState.sibelConfirmed || !tanirState.orucConfirmed) return;
+      document.getElementById("tanirSibelReveal").textContent = tanirSibelInput.value || "(Boş)";
+      document.getElementById("tanirSibelReveal").style.display = "block";
+      document.getElementById("tanirOrucReveal").textContent = tanirOrucInput.value || "(Boş)";
+      document.getElementById("tanirOrucReveal").style.display = "block";
+      document.querySelectorAll(".tanirInputWrap").forEach(el => el.style.display = "none");
+      document.getElementById("tanirSibelOnayla").style.display = "none";
+      document.getElementById("tanirOrucOnayla").style.display = "none";
+      document.getElementById("tanirQuizActions").style.display = "block";
+      const isLast = tanirState.index === 4;
+      document.getElementById("tanirNextBtn").style.display = isLast ? "none" : "block";
+      document.getElementById("tanirPlayAgainBtn").style.display = isLast ? "block" : "none";
+    }
+
+    document.getElementById("tanirSibelOnayla").onclick = () => {
+      if (tanirState.sibelConfirmed) return;
+      tanirState.sibelConfirmed = true;
+      document.getElementById("tanirSibelOnayla").classList.add("confirmed");
+      document.getElementById("tanirSibelOnayla").textContent = "✓ Onaylandı";
+      tanirSibelInput.disabled = true;
+      checkTanirReveal();
     };
-    document.getElementById("evetBtn").onclick = () => {
-      alert("Sana 1 şarkı armağan 🎶");
-      document.getElementById("evetHayirModal").classList.remove("open");
+    document.getElementById("tanirOrucOnayla").onclick = () => {
+      if (tanirState.orucConfirmed) return;
+      tanirState.orucConfirmed = true;
+      document.getElementById("tanirOrucOnayla").classList.add("confirmed");
+      document.getElementById("tanirOrucOnayla").textContent = "✓ Onaylandı";
+      tanirOrucInput.disabled = true;
+      checkTanirReveal();
+    };
+
+    document.getElementById("tanirNextBtn").onclick = () => {
+      tanirState.index++;
+      showTanirQuestion();
+    };
+
+    document.getElementById("tanirPlayAgainBtn").onclick = () => {
+      document.getElementById("tanirQuizStart").style.display = "block";
+      document.getElementById("tanirQuizPlay").style.display = "none";
     };
 
     // ========== ANI KUTUSU ==========
