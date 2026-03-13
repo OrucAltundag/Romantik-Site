@@ -47,10 +47,10 @@ Bu rehber, site verilerinin (ipucu, önemli not, tahmin cevabı) Firebase üzeri
 
 ---
 
-## Adım 5: firebase-config.js Dosyasını Düzenle
+## Adım 5: firebase-config.js Dosyasını Oluştur (Gizli — Git'e eklenmez)
 
-1. Proje klasöründe `firebase-config.js` dosyasını aç
-2. Firebase Console'dan kopyaladığın değerleri ilgili alanlara yapıştır:
+1. `firebase-config.example.js` dosyasını **firebase-config.js** olarak kopyala
+2. Firebase Console'dan kopyaladığın değerleri `firebase-config.js` içine yapıştır:
 
 ```javascript
 const FIREBASE_CONFIG = {
@@ -63,7 +63,7 @@ const FIREBASE_CONFIG = {
 };
 ```
 
-3. Dosyayı kaydet
+3. Dosyayı kaydet — **firebase-config.js** asla GitHub'a yüklenmemelidir (`.gitignore`'da)
 
 ---
 
@@ -72,6 +72,22 @@ const FIREBASE_CONFIG = {
 1. Siteyi aç (örn: Live Server veya `npx serve`)
 2. Admin sayfasına gir, ipucu/not ekle ve **Kaydet** tıkla
 3. Ana sayfayı yenile — veriler görünüyorsa kurulum başarılı
+
+---
+
+## GitHub ile Çalışırken — API Anahtarlarını Gizli Tut
+
+Projeyi GitHub'a yüklüyorsan, **firebase-config.js** dosyası `.gitignore`'da olduğu için commit edilmez. Ancak bu dosya daha önce commit edildiyse, Git geçmişinden kaldırman gerekir:
+
+```bash
+git rm --cached firebase-config.js
+git commit -m "firebase-config.js artık gizli, .gitignore'a eklendi"
+git push
+```
+
+Bundan sonra `firebase-config.js` sadece senin bilgisayarında kalacak, GitHub'da görünmeyecek. Yeni klonlayanlar `firebase-config.example.js`'i kopyalayıp kendi değerlerini girmeli.
+
+> **Önemli:** Anahtarlar bir kez GitHub'da göründüyse, Firebase Console → Google Cloud Console üzerinden API anahtarına **HTTP referrer kısıtlaması** eklemen önerilir (sadece kendi sitenin domain'i kullanabilsin).
 
 ---
 

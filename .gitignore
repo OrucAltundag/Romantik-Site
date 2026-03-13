@@ -1,0 +1,9 @@
+# Firebase gizli yapılandırma — API anahtarları burada, Git'e EKLENMESIN
+firebase-config.js
+
+# Diğer yaygın göz ardılar
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
