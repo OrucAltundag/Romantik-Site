@@ -4,7 +4,10 @@
 const SITE_CONFIG_KEYS = {
   hint: "romantik_admin_hint", notes: "romantik_admin_notes", tahminCevap: "romantik_admin_tahmin_cevap",
   watchList: "romantik_watch", listenList: "romantik_listen", memories: "romantik_memories",
-  calendar: "romantik_calendar", quizData: "romantik_quiz", sentences: "romantik_sentences"
+  calendar: "romantik_calendar", quizData: "romantik_quiz", sentences: "romantik_sentences",
+  vaultQuestions: "romantik_vault_questions",
+  moodBoard: "romantik_mood_board", thinkingPings: "romantik_thinking_pings",
+  answerKeyOruc: "romantik_ak_oruc", answerKeySibel: "romantik_ak_sibel"
 };
 
 function isFirebaseReady() {
