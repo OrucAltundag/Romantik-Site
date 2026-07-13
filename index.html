@@ -853,9 +853,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
-  <script src="firebase-config.js?v=20260713-2"></script>
-  <script src="firebase-db.js?v=20260713-2"></script>
-  <script src="extras.js?v=20260713-2"></script>
+  <script src="firebase-config.js?v=20260713-3"></script>
+  <script src="firebase-db.js?v=20260713-3"></script>
+  <script src="extras.js?v=20260713-3"></script>
 </head>
 
 <body>
@@ -2169,7 +2169,11 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       async function removeSong(id){
         yt = yt.filter(s => s.id !== id);
         rebuild(); renderList();
-        try{ await setCollection("playlist", yt); }catch(e){}
+        try{
+          if(typeof updateCollection === "function"){ yt = await updateCollection("playlist", arr => arr.filter(s => s.id !== id)); }
+          else { await setCollection("playlist", yt); }
+        }catch(e){}
+        rebuild(); renderList();
         if(typeof showToast==="function") showToast("Şarkı kaldırıldı", 1600);
       }
       function ytIdFromUrl(url){
@@ -2189,9 +2193,15 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         if(yt.some(s => s.id === id)){ if(typeof showToast==="function") showToast("Bu şarkı zaten listede 💗", 2200); return false; }
         let t = (title||"").trim();
         if(!t) t = (await fetchTitle(id)) || "YouTube Şarkısı";
-        yt.push({ id, title:t, by: window.currentUser||"?", ts: Date.now() });
+        const song = { id, title:t, by: window.currentUser||"?", ts: Date.now() };
+        yt.push(song);
         rebuild(); renderList();
-        try{ await setCollection("playlist", yt); }catch(e){}
+        try{
+          if(typeof updateCollection === "function"){
+            yt = await updateCollection("playlist", arr => { if(!arr.some(s => s.id === id)) arr.push(song); return arr; });
+          } else { await setCollection("playlist", yt); }
+        }catch(e){}
+        rebuild(); renderList();
         if(window.Ach) window.Ach.bump("song");
         if(typeof showToast==="function") showToast("Şarkı eklendi 🎶", 2000);
         return true;
@@ -2228,11 +2238,26 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     // ========== İZLEME & DİNLEME LİSTELERİ ==========
     let listFilter = "all"; // all | pending | done
     let currentListType = "watch";
+    let _watchArr = [], _listenArr = [];
+    let _listsSubscribed = false;
     async function loadLists() {
-      const watch = await getCollection("watchList");
-      const listen = await getCollection("listenList");
-      renderList("watchList", watch, "watch");
-      renderList("listenList", listen, "listen");
+      // Realtime: karşı tarafın eklediği/sildiği/güncellediği öğeler anında görünsün
+      if (typeof subscribeCollection === "function") {
+        if (!_listsSubscribed) {
+          _listsSubscribed = true;
+          subscribeCollection("watchList", (arr) => { _watchArr = Array.isArray(arr) ? arr : []; renderList("watchList", _watchArr, "watch"); });
+          subscribeCollection("listenList", (arr) => { _listenArr = Array.isArray(arr) ? arr : []; renderList("listenList", _listenArr, "listen"); });
+        } else {
+          // filtre değişimi vb. — mevcut önbellekten yeniden çiz
+          renderList("watchList", _watchArr, "watch");
+          renderList("listenList", _listenArr, "listen");
+        }
+        return;
+      }
+      _watchArr = await getCollection("watchList");
+      _listenArr = await getCollection("listenList");
+      renderList("watchList", _watchArr, "watch");
+      renderList("listenList", _listenArr, "listen");
     }
     function renderList(elId, arr, type) {
       const el = document.getElementById(elId);
@@ -2252,15 +2277,19 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         </div>`;
       }).join("") : `<p style="color:var(--muted); font-size:14px;">Henüz öğe yok.</p>`;
     }
+    async function mutateList(key, mutator){
+      if (typeof updateCollection === "function") { await updateCollection(key, arr => { mutator(arr); return arr; }); }
+      else { const arr = await getCollection(key); mutator(arr); await setCollection(key, arr); }
+    }
     window.toggleList = async (type, idx) => {
       const key = type === "watch" ? "watchList" : "listenList";
-      const arr = await getCollection(key);
-      if (arr[idx]) { arr[idx].completed = !arr[idx].completed; await setCollection(key, arr); loadLists(); }
+      await mutateList(key, arr => { if (arr[idx]) arr[idx].completed = !arr[idx].completed; });
+      loadLists();
     };
     window.deleteList = async (type, idx) => {
       const key = type === "watch" ? "watchList" : "listenList";
-      const arr = await getCollection(key);
-      arr.splice(idx, 1); await setCollection(key, arr); loadLists();
+      await mutateList(key, arr => { arr.splice(idx, 1); });
+      loadLists();
     };
     document.getElementById("addWatchBtn").onclick = () => { currentListType = "watch"; document.getElementById("listItemModalTitle").textContent = "İzleme Listesine Ekle"; document.getElementById("listItemModal").classList.add("open"); };
     document.getElementById("addListenBtn").onclick = () => { currentListType = "listen"; document.getElementById("listItemModalTitle").textContent = "Dinleme Listesine Ekle"; document.getElementById("listItemModal").classList.add("open"); };
@@ -2268,9 +2297,8 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       const title = document.getElementById("listItemTitle").value.trim();
       if (!title) return;
       const key = currentListType === "watch" ? "watchList" : "listenList";
-      const arr = await getCollection(key);
-      arr.unshift({ title, type: document.getElementById("listItemType").value.trim(), link: document.getElementById("listItemLink").value.trim(), completed: false, date: new Date().toLocaleDateString("tr-TR") });
-      await setCollection(key, arr);
+      const item = { title, type: document.getElementById("listItemType").value.trim(), link: document.getElementById("listItemLink").value.trim(), completed: false, date: new Date().toLocaleDateString("tr-TR") };
+      await mutateList(key, arr => { arr.unshift(item); });
       document.getElementById("listItemTitle").value = document.getElementById("listItemType").value = document.getElementById("listItemLink").value = "";
       document.getElementById("listItemModal").classList.remove("open");
       loadLists();
@@ -3980,17 +4008,32 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         strokes.forEach(drawStroke);
       }
       function pos(e){ const r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height }; }
-      async function persist(){
-        if(_saving) return; _saving=true;
-        try{ if(typeof setCollection==="function") await setCollection("doodleStrokes", strokes.slice(-600)); }catch(e){}
-        _saving=false;
+      // Yeni bir çizgiyi ATOMİK olarak ekle (karşı tarafın çizimlerini ezmeden)
+      async function commitStroke(stroke){
+        try{
+          if(typeof updateCollection === "function"){
+            strokes = await updateCollection("doodleStrokes", arr => { arr.push(stroke); return arr.slice(-600); });
+            redraw();
+          } else if(typeof setCollection === "function"){
+            await setCollection("doodleStrokes", strokes.slice(-600));
+          }
+        }catch(e){}
       }
       cv.addEventListener("pointerdown", e=>{ if(!ctx) return; drawing=true; curStroke={ color, size, eraser, by: window.currentUser||"?", pts:[pos(e)] }; drawStroke(curStroke); if(!_doodleAch){ _doodleAch=true; if(window.Ach) window.Ach.bump("doodle"); } });
       cv.addEventListener("pointermove", e=>{ if(!drawing||!ctx||!curStroke) return; const p=pos(e); curStroke.pts.push(p); const {w,h}=dims(); ctx.strokeStyle = eraser?"#ffffff":color; ctx.lineWidth=size; const n=curStroke.pts.length; ctx.beginPath(); ctx.moveTo(curStroke.pts[n-2].x*w, curStroke.pts[n-2].y*h); ctx.lineTo(p.x*w, p.y*h); ctx.stroke(); });
-      window.addEventListener("pointerup", ()=>{ if(!drawing) return; drawing=false; if(curStroke && curStroke.pts.length){ strokes.push(curStroke); if(strokes.length>600) strokes=strokes.slice(-600); persist(); } curStroke=null; });
+      window.addEventListener("pointerup", ()=>{ if(!drawing) return; drawing=false; const s=curStroke; curStroke=null; if(s && s.pts.length){ strokes.push(s); if(strokes.length>600) strokes=strokes.slice(-600); commitStroke(s); } });
 
-      $("doodleUndo").addEventListener("click", ()=>{ for(let i=strokes.length-1;i>=0;i--){ if(strokes[i].by===(window.currentUser||"?")){ strokes.splice(i,1); redraw(); persist(); return; } } });
-      $("doodleClear").addEventListener("click", ()=>{ if(!confirm("Ortak tahtayı ikiniz için de temizle?")) return; strokes=[]; redraw(); persist(); });
+      $("doodleUndo").addEventListener("click", async ()=>{
+        const me = window.currentUser || "?";
+        // kendi son çizgini atomik olarak sil (karşı tarafınkine dokunmadan)
+        if(typeof updateCollection === "function"){
+          strokes = await updateCollection("doodleStrokes", arr => { for(let i=arr.length-1;i>=0;i--){ if(arr[i].by===me){ arr.splice(i,1); break; } } return arr; });
+          redraw();
+        } else {
+          for(let i=strokes.length-1;i>=0;i--){ if(strokes[i].by===me){ strokes.splice(i,1); redraw(); try{ await setCollection("doodleStrokes", strokes); }catch(e){} return; } }
+        }
+      });
+      $("doodleClear").addEventListener("click", async ()=>{ if(!confirm("Ortak tahtayı ikiniz için de temizle?")) return; strokes=[]; redraw(); try{ await setCollection("doodleStrokes", []); }catch(e){} });
       $("doodleSave").addEventListener("click", ()=>{ try{ const a=document.createElement("a"); a.download="bizim-karalama.png"; a.href=cv.toDataURL(); a.click(); }catch(e){} });
 
       // Realtime ortak çizim

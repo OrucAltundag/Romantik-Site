@@ -141,6 +141,40 @@ async function setCollection(key, items) {
   } catch (e) { console.warn("Firebase yazma hatası:", e); }
 }
 
+/**
+ * Diziyi ATOMİK güncelle: yazmadan hemen önce en güncel Firestore verisini
+ * transaction içinde okur, mutator ile değiştirir, yazar. Böylece iki taraf
+ * aynı anda ekleme/silme yapsa bile biri diğerini EZMEZ (kalıcılık + senkron).
+ * mutator(mevcutDizi) -> yeniDizi döndürmeli.
+ */
+async function updateCollection(key, mutator) {
+  if (!(await fbUsable())) {
+    const next = mutator((lsGetArr(key) || []).slice());
+    lsSet(key, next);
+    return next;
+  }
+  const db = await fbDb();
+  const ref = db.collection("siteData").doc(key);
+  let result;
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const cur = (snap.exists && Array.isArray(snap.data().items)) ? snap.data().items : [];
+      result = mutator(cur.slice());
+      tx.set(ref, { items: result });
+    });
+  } catch (e) {
+    console.warn("updateCollection transaction hatası:", e.code || e.message);
+    // Yedek: doğrudan oku-yaz
+    const cur = await getCollection(key);
+    result = mutator(cur.slice());
+    await setCollection(key, result);
+    return result;
+  }
+  lsSet(key, result);
+  return result;
+}
+
 /* ---------------- Nesne (doc) verileri ---------------- */
 async function getDoc(key) {
   if (!(await fbUsable())) return lsGetObj(key);
