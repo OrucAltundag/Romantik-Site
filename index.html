@@ -69,9 +69,20 @@
       background:rgba(255,255,255,.10); color:var(--txt);
       border:1px solid rgba(255,255,255,.16);
       font-weight:650;
-      transition:.18s transform, .18s background, .18s border-color, .18s filter;
+      /* Elastik / yumuşak top hissi: overshoot eğrisi */
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), background .18s, border-color .18s, filter .18s, box-shadow .25s;
+      will-change: transform;
     }
-    button:hover{transform: translateY(-1px); background:rgba(255,255,255,.14)}
+    button:hover{ transform: translateY(-2px) scale(1.05); background:rgba(255,255,255,.14); animation: btnJelly .5s ease; }
+    button:active{ transform: scale(.9); transition-duration:.08s; }
+    @keyframes btnJelly{
+      0%{ transform: translateY(-2px) scale(1.05,1.05); }
+      30%{ transform: translateY(-2px) scale(1.12,.9); }
+      55%{ transform: translateY(-2px) scale(.95,1.08); }
+      75%{ transform: translateY(-2px) scale(1.04,.98); }
+      100%{ transform: translateY(-2px) scale(1.05,1.05); }
+    }
+    @media(hover:none){ button:hover{ animation:none; } } /* dokunmatikte sürekli tetiklenmesin */
     .primary{
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       border-color: transparent;
@@ -90,6 +101,41 @@
     /* Foto galeri */
     .gallery{display:grid; gap:10px; grid-template-columns: repeat(2, 1fr);}
     @media(min-width:600px){ .gallery{grid-template-columns: repeat(4, 1fr);} }
+
+    /* 📸 Yeni galeri: 6 kutu, sürekli rastgele döngü, sabit yükseklik */
+    .galleryHead{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .galleryCount{ font-size:12.5px; color:var(--muted); }
+    .gallery6{ grid-template-columns: repeat(3, 1fr); }
+    @media(max-width:600px){ .gallery6{ grid-template-columns: repeat(2, 1fr); } }
+    .phTile{
+      position:relative; aspect-ratio:1/1; border-radius:16px; overflow:hidden;
+      border:1px solid var(--border); background:rgba(255,255,255,.06); cursor:pointer;
+    }
+    .phTile img{ width:100%; height:100%; object-fit:cover; display:block;
+      transition:opacity .55s ease, transform .35s ease; filter:saturate(1.02); }
+    .phTile:hover img{ transform:scale(1.06); filter:brightness(1.08); }
+    .phTile.swapping img{ opacity:0; }
+    .phTile .phBadge{ position:absolute; left:8px; top:8px; font-size:11px; padding:2px 7px;
+      border-radius:999px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.18); color:#fff; opacity:.9; }
+    .galleryControls{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; justify-content:center; }
+    .galleryExpanded{ margin-top:14px; }
+    .galleryScroll{
+      max-height:360px; overflow-y:auto; display:grid; gap:8px; padding:4px;
+      grid-template-columns: repeat(4, 1fr);
+      scrollbar-width:thin; -webkit-overflow-scrolling:touch;
+    }
+    @media(max-width:600px){ .galleryScroll{ grid-template-columns: repeat(3, 1fr); max-height:62vh; } }
+    .gph{ position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden; border:1px solid var(--border); background:rgba(255,255,255,.06); }
+    .gph img{ width:100%; height:100%; object-fit:cover; display:block; cursor:pointer; }
+    .gphDel{
+      position:absolute; top:5px; right:5px; width:26px; height:26px; border-radius:50%;
+      background:rgba(0,0,0,.55); color:#fff; border:1px solid rgba(255,255,255,.35);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; line-height:1;
+      padding:0; transition:.15s transform, .15s background;
+    }
+    .gphDel:hover{ background:rgba(230,40,90,.85); transform:scale(1.1); }
+    .gphUploading{ display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; text-align:center; }
+    .galleryUploadNote{ font-size:12px; color:var(--muted); text-align:center; margin-top:10px; }
     .ph{
       aspect-ratio: 1 / 1;
       border-radius:16px;
@@ -167,6 +213,35 @@
     /* Mektup: satır sonlarını güzel göster */
     .letterText{white-space:pre-line;}
 
+    /* 💌 Kişiye özel açılış mektubu kartı */
+    .openingCard{
+      background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 14%, rgba(255,255,255,.05)), color-mix(in srgb, var(--accent2) 12%, rgba(255,255,255,.04)));
+      border:1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+      animation: openingIn .7s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes openingIn{ from{opacity:0; transform: translateY(14px) scale(.98);} to{opacity:1; transform:none;} }
+    .openingHead{ display:flex; flex-direction:column; gap:2px; margin-bottom:6px; }
+    .openingHitap{
+      display:inline-flex; width:fit-content; align-items:center; gap:6px;
+      font-size:13px; color:var(--muted); letter-spacing:.4px;
+      padding:4px 10px; border-radius:999px;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+    .openingHeading{ margin:6px 0 2px; font-size:clamp(22px,3.4vw,30px); }
+    .openingLetter{ margin:6px 0 4px; color:var(--muted); line-height:1.75; font-size:16px; }
+    .openingBullets{ margin:10px 0 0; padding:0; list-style:none; display:grid; gap:8px; }
+    .openingBullets li{
+      position:relative; padding:9px 12px 9px 34px; border-radius:14px;
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--muted); font-size:14.5px; line-height:1.5;
+    }
+    .openingBullets li:before{ content:"💗"; position:absolute; left:11px; top:9px; font-size:14px; }
+    @media(max-width:520px){
+      .openingLetter{ font-size:15px; }
+      .openingBullets li{ font-size:14px; padding-left:32px; }
+    }
+
     /* Sürprizde solda resim alanı */
     .surpriseMedia{ margin-top:14px; display:none; }
     .surpriseImgWrap{
@@ -196,6 +271,48 @@
 
     /* Audio görünümü */
     audio{ width:100%; }
+
+    /* 🎧 Müzik çalar */
+    .musicPlayer{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding:12px 14px; border-radius:16px; margin-bottom:12px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, rgba(255,255,255,.05)), color-mix(in srgb, var(--accent2) 14%, rgba(255,255,255,.04)));
+      border:1px solid color-mix(in srgb, var(--accent) 26%, var(--border)); }
+    .npCard{ display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
+    .npDisc{ width:46px; height:46px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px;
+      background:radial-gradient(circle at 35% 30%, #2a2140, #120c22); border:1px solid var(--border); box-shadow:0 6px 18px rgba(0,0,0,.35); }
+    .npDisc.spin{ animation: npSpin 5s linear infinite; }
+    @keyframes npSpin{ to{ transform: rotate(360deg); } }
+    .npInfo{ min-width:0; }
+    .npTitle{ font-weight:700; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .npState{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .npControls{ display:flex; align-items:center; gap:8px; }
+    .npControls button{ padding:9px 12px; border-radius:12px; font-size:15px; }
+    .npPlayBtn{ min-width:52px; font-size:16px; }
+    .playlistList{ display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding:2px; scrollbar-width:thin; }
+    .plItem{ display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px;
+      background:rgba(255,255,255,.05); border:1px solid var(--border); cursor:pointer; transition:.15s background, .15s border-color; }
+    .plItem:hover{ background:rgba(255,255,255,.09); }
+    .plItem.active{ border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 14%, rgba(255,255,255,.05)); }
+    .plIcon{ width:30px; height:30px; flex:none; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; background:rgba(0,0,0,.3); }
+    .plName{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:14px; }
+    .plBars{ display:none; gap:2px; align-items:flex-end; height:16px; }
+    .plItem.active .plBars{ display:flex; }
+    .plBars span{ width:3px; background:var(--accent); border-radius:2px; animation: plBar .9s ease-in-out infinite; }
+    .plBars span:nth-child(2){ animation-delay:.25s } .plBars span:nth-child(3){ animation-delay:.5s }
+    @keyframes plBar{ 0%,100%{ height:5px } 50%{ height:15px } }
+    .plDel{ width:26px; height:26px; flex:none; border-radius:50%; background:rgba(0,0,0,.35); color:#fff; border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; padding:0; }
+    .plDel:hover{ background:rgba(230,40,90,.8); }
+    .addSongRow{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+    .addSongRow input{ flex:1; min-width:140px; padding:10px 12px; border-radius:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.08); color:var(--txt); font-size:14px; font-family:inherit; }
+    .addSongRow #songTitleInput{ flex:.7; }
+    .addSongRow button{ padding:10px 16px; border-radius:12px; }
+    .addSongHint{ font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5; }
+    @media(max-width:520px){
+      .addSongRow input, .addSongRow #songTitleInput{ flex:1 1 100%; }
+      .npControls button{ padding:8px 11px; }
+    }
 
     /* İpucu modal */
     .modalOverlay{
@@ -473,7 +590,9 @@
     #loveCount{ font-weight:800; font-size:22px; color:var(--accent); }
 
     /* Balonlar */
-    #balloonField{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; }
+    #balloonField{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; min-height:80px; align-items:center; }
+    .balloonLocked{ font-size:14px; color:var(--muted); padding:14px 16px; border-radius:14px; background:rgba(255,255,255,.05); border:1px dashed var(--border); width:100%; }
+    .balloonLocked b{ color:var(--accent); }
     .balloon{ position:relative; width:58px; height:74px; border-radius:50% 50% 48% 48%; cursor:pointer; transition: transform .25s; box-shadow: inset -6px -6px 12px rgba(0,0,0,.18); animation: floatY 3s ease-in-out infinite; }
     .balloon:hover{ transform: translateY(-6px) scale(1.05); }
     .balloon::after{ content:""; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid inherit; }
@@ -596,10 +715,17 @@
     .ach{ display:flex; align-items:center; gap:10px; padding:12px; border-radius:14px; border:1px solid var(--border); background:rgba(255,255,255,.04); transition:.3s; }
     .ach.locked{ opacity:.45; filter:grayscale(.7); }
     .ach.unlocked{ background:linear-gradient(135deg, color-mix(in srgb,var(--accent) 16%, transparent), color-mix(in srgb,var(--accent2) 16%, transparent)); box-shadow:0 6px 18px rgba(0,0,0,.2); }
-    .ach .achIcon{ font-size:26px; }
+    .ach{ cursor:pointer; }
+    .ach:hover{ transform:translateY(-2px); }
+    .ach .achIcon{ font-size:26px; flex:none; }
     .ach .achName{ font-size:13px; font-weight:700; }
-    .ach .achDesc{ font-size:11px; color:var(--muted); }
-    #achProgress{ font-size:13px; color:var(--muted); margin-top:10px; text-align:center; }
+    .ach .achDesc{ font-size:11px; color:var(--muted); line-height:1.35; }
+    .achBar{ height:5px; border-radius:99px; background:rgba(255,255,255,.12); margin-top:6px; overflow:hidden; }
+    .achBarFill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .5s ease; }
+    #achProgress{ font-size:13px; color:var(--muted); margin-top:12px; text-align:center; }
+    .achTierDot{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:16px; border:1px solid var(--border); background:rgba(255,255,255,.06); }
+    .achTierDot.on{ background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 40%,transparent); }
+    .achTierDot.off{ opacity:.4; filter:grayscale(1); }
 
     /* 🎂 Kutlama modu overlay */
     #celebrate{ position:fixed; inset:0; z-index:215; display:none; place-items:center; text-align:center; background:radial-gradient(1000px 700px at 50% 30%, color-mix(in srgb,var(--accent) 34%, transparent), transparent 60%), rgba(8,6,18,.9); backdrop-filter:blur(6px); padding:20px; }
@@ -647,6 +773,9 @@
     .doodleColor{ width:26px; height:26px; border-radius:50%; border:2px solid rgba(255,255,255,.4); cursor:pointer; transition:transform .15s; }
     .doodleColor.sel{ transform:scale(1.25); border-color:#fff; box-shadow:0 0 0 2px var(--accent); }
     .doodleTools input[type=range]{ accent-color:var(--accent); }
+    .doodleToolBtn{ font-size:13px; padding:7px 11px; }
+    .doodleToolBtn.active{ background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; }
+    .doodleHint{ font-size:12px; color:var(--muted); margin-top:8px; }
 
     /* 🎵 Şarkı ithafı */
     .lyricLine{ font-size:16px; line-height:1.9; color:var(--muted); opacity:.5; transition:.35s; text-align:center; }
@@ -675,8 +804,32 @@
     .akRow{ display:grid; grid-template-columns:1fr; gap:4px; margin-bottom:10px; }
     .akRow label{ font-size:13px; color:var(--muted); }
     .akRow input{ width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); font-size:15px; box-sizing:border-box; }
-    #akList{ max-height:52vh; overflow-y:auto; margin:12px 0; padding-right:6px; }
+    #akList{ max-height:40vh; overflow-y:auto; margin:12px 0; padding-right:6px; }
     #akSavedInfo{ font-size:13px; margin-top:6px; min-height:18px; }
+
+    /* Oruç'a özel ayar blokları */
+    .orucSetsIntro{ margin:16px 0 10px; padding-top:14px; border-top:1px solid var(--border); font-size:12.5px; color:var(--muted); }
+    .setBlock{ margin-top:10px; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.03); }
+    .setToggle{ width:100%; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:12px 14px; font-size:14.5px; font-weight:700; background:rgba(255,255,255,.05); border:0; border-radius:0; color:var(--txt); }
+    .setToggle:hover{ background:rgba(255,255,255,.09); }
+    .setChevron{ transition:transform .25s; font-size:13px; opacity:.7; }
+    .setBlock.open .setChevron{ transform:rotate(180deg); }
+    .setBody{ display:none; padding:12px 14px 14px; }
+    .setBlock.open .setBody{ display:block; }
+    .setTitle{ margin:0 0 4px; font-size:15px; }
+    .setHint{ margin:0 0 10px; font-size:12.5px; color:var(--muted); line-height:1.5; }
+    .setArea{ width:100%; min-height:110px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); font-size:14px; font-family:inherit; box-sizing:border-box; resize:vertical; line-height:1.6; }
+    .setInput{ width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); font-size:14px; box-sizing:border-box; font-family:inherit; }
+    .setSave{ width:100%; margin-top:10px; }
+    .setInfo{ font-size:13px; margin-top:6px; min-height:18px; color:#69db7c; }
+    .capEditRow{ border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; background:rgba(255,255,255,.04); position:relative; }
+    .capEditRow input, .capEditRow textarea{ width:100%; margin-bottom:6px; padding:8px 10px; border-radius:9px; border:1px solid var(--border); background:rgba(255,255,255,.08); color:var(--txt); font-size:13px; box-sizing:border-box; font-family:inherit; }
+    .capEditRow textarea{ min-height:70px; resize:vertical; line-height:1.5; }
+    .capEditDel{ position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:50%; background:rgba(230,40,90,.7); color:#fff; border:0; cursor:pointer; font-size:12px; padding:0; }
+    .capRowLabel{ font-size:11px; color:var(--muted); display:block; margin-bottom:2px; }
+    .openEditPerson{ border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; background:rgba(255,255,255,.04); }
+    .openEditPerson h5{ margin:0 0 8px; font-size:13px; color:var(--accent); }
 
     /* 💕 Yeni Quiz */
     .quizQ{ margin-bottom:16px; }
@@ -698,9 +851,11 @@
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="firebase-db.js"></script>
-  <script src="extras.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js?v=20260713-2"></script>
+  <script src="firebase-db.js?v=20260713-2"></script>
+  <script src="extras.js?v=20260713-2"></script>
 </head>
 
 <body>
@@ -795,19 +950,65 @@
   </div>
 
   <div class="wrap">
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 10px; font-size:16px">Fotoğraflar</h3>
-      <div class="gallery" id="gallery"></div>
-      <button class="primary" id="slideshowBtn" style="margin-top:14px;">🎬 Anılarımızı Sinema Modunda İzle</button>
+    <!-- 💌 Kişiye özel açılış mektubu (giriş yapan kişiye göre) -->
+    <section class="card openingCard" id="openingCard" style="margin-top:14px; display:none;">
+      <div class="openingHead">
+        <span class="openingHitap" id="openingHitap"></span>
+        <h2 class="openingHeading" id="openingHeading"></h2>
+      </div>
+      <p class="letterText openingLetter" id="openingLetter"></p>
+      <ul class="openingBullets" id="openingBullets"></ul>
     </section>
 
-    <!-- Müzik -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 10px; font-size:16px">Müzik</h3>
-      <div id="musicStartOverlay" style="padding:14px; background:rgba(255,255,255,.06); border-radius:14px; border:1px dashed var(--border); text-align:center; cursor:pointer; color:var(--muted);">🎵 Müziği başlatmak için tıkla</div>
-      <audio id="bgMusic" controls style="width:100%; display:none;">
-        <source src="Music/m1.mp3" type="audio/mpeg">
-      </audio>
+    <section class="card noTilt" id="galleryCard" style="margin-top:14px">
+      <div class="galleryHead">
+        <h3 style="margin:0; font-size:16px">📸 Galerimiz</h3>
+        <span class="galleryCount" id="galleryCount"></span>
+      </div>
+      <div class="gallery gallery6" id="gallery"></div>
+      <div class="galleryControls">
+        <button id="addPhotoBtn">＋ Fotoğraf Ekle</button>
+        <button id="expandGalleryBtn">🖼️ Tümünü Gör</button>
+        <button class="primary btnCinema" id="slideshowBtn">🎬 Sinema Modu</button>
+      </div>
+      <input type="file" id="photoFileInput" accept="image/*" multiple hidden>
+      <div class="galleryExpanded" id="galleryExpanded" style="display:none">
+        <div class="galleryScroll" id="galleryScroll"></div>
+        <div class="galleryUploadNote" id="galleryUploadNote"></div>
+      </div>
+    </section>
+
+    <!-- 🎧 Müzik Listemiz -->
+    <section class="card" id="musicCard" style="margin-top:14px">
+      <h3 style="margin:0 0 12px; font-size:16px">🎧 Müzik Listemiz</h3>
+      <div id="musicStartOverlay" style="padding:14px; background:rgba(255,255,255,.06); border-radius:14px; border:1px dashed var(--border); text-align:center; cursor:pointer; color:var(--muted);">🎵 Müziği başlatmak için dokun</div>
+
+      <div class="musicPlayer" id="musicPlayer" style="display:none">
+        <div class="npCard">
+          <div class="npDisc" id="npDisc">🎵</div>
+          <div class="npInfo">
+            <div class="npTitle" id="npTitle">—</div>
+            <div class="npState" id="npState">Hazır</div>
+          </div>
+        </div>
+        <div class="npControls">
+          <button id="npPrev" title="Önceki">⏮</button>
+          <button class="primary npPlayBtn" id="npPlay" title="Oynat/Duraklat">▶</button>
+          <button id="npNext" title="Sonraki">⏭</button>
+        </div>
+      </div>
+
+      <audio id="bgMusic" style="display:none"></audio>
+      <div id="ytHost" style="position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none; left:-9999px;"></div>
+
+      <div class="playlistList" id="playlistList"></div>
+
+      <div class="addSongRow">
+        <input type="text" id="songUrlInput" placeholder="YouTube linki yapıştır…" autocomplete="off">
+        <input type="text" id="songTitleInput" placeholder="Şarkı adı (isteğe bağlı)" autocomplete="off">
+        <button id="addSongBtn">＋ Ekle</button>
+      </div>
+      <div class="addSongHint">💡 YouTube'da şarkı → <b>Paylaş</b> → <b>Bağlantıyı kopyala</b> → buraya yapıştır. Eklenen şarkılar kalıcıdır ve her açılışta rastgele biri çalar 💗</div>
     </section>
 
     <!-- İzleme & Dinleme Listeleri -->
@@ -833,22 +1034,6 @@
       </div>
     </section>
 
-    <!-- Sürpriz Aşk Kutusu -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 10px; font-size:16px">💝 Sürpriz Aşk Kutusu</h3>
-      <p style="margin:0 0 12px; font-size:14px; color:var(--muted);">Kutuyu aç, içinden tatlı sürprizler çıksın!</p>
-      <button class="primary" id="askKutuBtn">🎀 Kutuyu Aç</button>
-    </section>
-
-    <!-- Randevu Çarkı -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 10px; font-size:16px">🎡 Randevu Çarkı</h3>
-      <p style="margin:0 0 12px; font-size:14px; color:var(--muted);">Butona bas, rastgele bir randevu fikri çıksın!</p>
-      <button class="primary" id="spinDateBtn">🎡 Çevir</button>
-      <button id="spinAgainBtn" style="display:none; margin-left:8px;">Şansım yok, yeniden çevir</button>
-      <div id="dateResult" style="margin-top:14px; padding:16px; background:rgba(255,255,255,.06); border-radius:14px; display:none;"></div>
-    </section>
-
     <!-- Oyunlar -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 10px; font-size:16px">🎮 Tatlı Oyunlar</h3>
@@ -861,6 +1046,8 @@
         <button id="gameCookieBtn">🥠 Şanslı Kurabiye</button>
         <button id="gameCatchBtn">💖 Kalp Yakala</button>
         <button id="gamePuzzleBtn">🧩 Fotoğraf Yapbozu</button>
+        <button id="gameSeviyorBtn">💕 Beni Seviyor musun?</button>
+        <button id="gamePapatyaBtn">🌼 Papatya Falı</button>
       </div>
     </section>
 
@@ -882,8 +1069,8 @@
     <!-- 🌟 Günün İltifatı -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 6px; font-size:16px">🌟 Günün İltifatı</h3>
+      <p style="margin:0 0 8px; font-size:13px; color:var(--muted);">Her gün sana özel bir iltifat 💗</p>
       <div id="dailyCompliment"></div>
-      <button id="newComplimentBtn" style="font-size:13px;">🔄 Bir tane daha</button>
     </section>
 
     <!-- 💗 Seni Seviyorum Sayacı -->
@@ -916,19 +1103,6 @@
       <div id="balloonMsg" style="margin-top:12px; font-size:16px; min-height:24px; color:var(--accent); font-weight:600;"></div>
     </section>
 
-    <!-- 🔐 Şifreli Kasa -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 6px; font-size:16px">🔐 Bize Özel Kasa</h3>
-      <p style="margin:0 0 10px; font-size:14px; color:var(--muted);">Doğru cevabı ver, kasadaki sürprizi aç! 🗝️</p>
-      <div id="vaultQuestion" style="font-size:16px; font-weight:600; margin:0 0 12px; padding:12px 14px; background:rgba(255,255,255,.06); border-radius:14px; border:1px solid var(--border);"></div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <input type="text" id="vaultInput" placeholder="Cevabın..." maxlength="40" style="flex:1; min-width:140px;">
-        <button class="primary" id="vaultBtn">Aç 🗝️</button>
-        <button id="vaultNextBtn" title="Başka soru">🔄</button>
-      </div>
-      <div id="vaultResult"></div>
-    </section>
-
     <!-- 📮 Zaman Kapsülü -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 6px; font-size:16px">📮 Zaman Kapsülü Mektupları</h3>
@@ -958,13 +1132,6 @@
       </div>
     </section>
 
-    <!-- 📊 Bizim Rakamlar -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 6px; font-size:16px">📊 Bizim Rakamlar</h3>
-      <p style="margin:0 0 6px; font-size:14px; color:var(--muted);">Aşkımızın küçük istatistikleri 💞</p>
-      <div class="statsGrid" id="statsGrid"></div>
-    </section>
-
     <!-- 🏆 Başarımlar -->
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 6px; font-size:16px">🏆 Başarımlar</h3>
@@ -977,19 +1144,6 @@
     <section class="card" style="margin-top:14px">
       <h3 style="margin:0 0 6px; font-size:16px">🗺️ Aramızdaki Mesafe</h3>
       <div class="distanceWrap" id="distanceWrap"></div>
-    </section>
-
-    <!-- 📔 Ruh Hali Panosu -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 6px; font-size:16px">📔 Bugün Nasılsın?</h3>
-      <div class="whoAmI">Ben:
-        <select id="whoAmI"></select>
-        <span style="font-size:12px;">— ruh halini ve küçük bir not bırak, o da görsün 💗</span>
-      </div>
-      <div class="moodPick" id="moodPick"></div>
-      <input type="text" id="moodNote" placeholder="Bugün canım... (opsiyonel)" maxlength="120">
-      <button class="primary" id="moodSend" style="margin-top:10px;">Paylaş 💌</button>
-      <div id="moodFeed"></div>
     </section>
 
     <!-- 🔔 Seni Düşünüyorum -->
@@ -1007,24 +1161,15 @@
       <div id="doodleWrap"><canvas id="doodleCanvas"></canvas></div>
       <div class="doodleTools">
         <div id="doodleColors"></div>
-        <label style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">Kalınlık <input type="range" id="doodleSize" min="1" max="24" value="4"></label>
-        <button id="doodleClear" style="font-size:13px;">🧽 Temizle</button>
-        <button id="doodleSave" style="font-size:13px;">💾 İndir</button>
+        <button id="doodleEraser" class="doodleToolBtn" title="Silgi">🩹 Silgi</button>
+        <label style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">Kalınlık <input type="range" id="doodleSize" min="1" max="30" value="5"></label>
+        <button id="doodleUndo" class="doodleToolBtn" title="Son çizimini geri al">↩️ Geri Al</button>
+        <button id="doodleClear" class="doodleToolBtn">🧽 Temizle</button>
+        <button id="doodleSave" class="doodleToolBtn">💾 İndir</button>
       </div>
+      <div class="doodleHint" id="doodleHint">🖌️ Ortak tahta — çizdiğin anında ikinizde de görünür 💕</div>
     </section>
 
-    <!-- 🎵 Şarkı İthafı -->
-    <section class="card" style="margin-top:14px">
-      <h3 style="margin:0 0 6px; font-size:16px">🎵 Sana Bir Şarkı</h3>
-      <div class="songDiscWrap">
-        <div class="songDisc" id="songDisc">🎵</div>
-        <div style="flex:1;">
-          <div id="songTitle" style="font-weight:700;"></div>
-          <button class="primary" id="songPlayBtn" style="margin-top:8px; font-size:14px;">▶ Çal</button>
-        </div>
-      </div>
-      <div id="lyricsBox"></div>
-    </section>
   </div>
 
   <!-- İpucu modal -->
@@ -1049,6 +1194,18 @@
   </div>
 
   <div id="confettiWrap"></div>
+
+  <!-- 🏆 Başarım detay modal -->
+  <div class="modalOverlay" id="achModal">
+    <div class="modalBox" style="max-width:360px; text-align:center;">
+      <div id="achModalIcon" style="font-size:52px; margin-bottom:8px;">🏆</div>
+      <h3 id="achModalName" style="justify-content:center;"></h3>
+      <p id="achModalHow" style="text-align:center;"></p>
+      <div id="achModalProg" style="margin-top:12px; font-weight:700; color:var(--accent);"></div>
+      <div id="achModalTiers" style="margin-top:10px; display:flex; gap:8px; justify-content:center;"></div>
+      <button class="modalClose" id="achModalClose" style="margin-top:16px;">Kapat</button>
+    </div>
+  </div>
 
   <!-- Sürpriz şifre modal -->
   <div class="modalOverlay" id="surprisePasswordModal">
@@ -1346,6 +1503,42 @@
       <div id="akList"></div>
       <button class="primary" id="akSave" style="width:100%;">💾 Cevap Anahtarını Kaydet</button>
       <div id="akSavedInfo"></div>
+
+      <!-- Sadece Oruç'a görünür ayarlar (akordeon: her başlık bir buton, tıkla-aç) -->
+      <div id="orucSettings" style="display:none;">
+        <p class="orucSetsIntro">🔒 Sadece sana görünür ayarlar (Sibel göremez). Başlığa dokun, aç-kapat.</p>
+
+        <div class="setBlock">
+          <button type="button" class="setToggle">🎈 Balon Mesajları<span class="setChevron">▾</span></button>
+          <div class="setBody">
+            <p class="setHint">Her satır bir balon mesajı olur. Balonlar günde bir, sırayla açılır. (Sibel bunları önceden göremez.)</p>
+            <textarea class="setArea" id="balloonMsgsInput" placeholder="Her satıra bir mesaj yaz..."></textarea>
+            <button class="primary setSave" id="balloonMsgsSave">💾 Balon Mesajlarını Kaydet</button>
+            <div class="setInfo" id="balloonMsgsInfo"></div>
+          </div>
+        </div>
+
+        <div class="setBlock">
+          <button type="button" class="setToggle">📮 Zaman Kapsülü Mektupları<span class="setChevron">▾</span></button>
+          <div class="setBody">
+            <p class="setHint">Belirli tarihte açılacak mektuplar. Tarihi <b>YYYY-AA-GG</b> biçiminde yaz (örn. 2026-08-15).</p>
+            <div id="capsuleEditor"></div>
+            <button id="capsuleAddBtn" style="width:100%; margin-top:4px;">＋ Yeni Mektup Ekle</button>
+            <button class="primary setSave" id="capsuleSave">💾 Kapsülleri Kaydet</button>
+            <div class="setInfo" id="capsuleInfo"></div>
+          </div>
+        </div>
+
+        <div class="setBlock">
+          <button type="button" class="setToggle">💌 Açılış Mektupları<span class="setChevron">▾</span></button>
+          <div class="setBody">
+            <p class="setHint">Giriş ekranında kişiye özel görünen başlık ve mektup. Boş bırakırsan varsayılan kullanılır.</p>
+            <div id="openingEditor"></div>
+            <button class="primary setSave" id="openingSave">💾 Açılış Mektuplarını Kaydet</button>
+            <div class="setInfo" id="openingInfo"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1377,6 +1570,8 @@
     try {
       if (typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('BURAYA') && typeof firebase !== 'undefined') {
         firebase.initializeApp(FIREBASE_CONFIG);
+        // Anonim girişi erkenden başlat (Firestore/Storage kuralları auth ister).
+        if (typeof fbReady === 'function') { fbReady().then(function(ok){ console.log('Firebase hazır (auth):', ok); }); }
       }
     } catch (e) { console.warn('Firebase init:', e); }
   </script>
@@ -1386,6 +1581,44 @@
        ========================= */
     const CONFIG = {
       loverName: "SİBEL",
+
+      // 👥 Kişiye özel açılış — giriş yapan kişiye (Oruç / Sibel) göre değişir.
+      // Her kişi için: karşısındaki (partner), başlık, hitaplar, açılış mektubu, karşılama.
+      // Bu metinler "Oruç Ayarlar" panelinden düzenlenebilir (kalıcı olarak kaydedilir).
+      people: {
+        "Sibel": {
+          partner: "Oruç",
+          heading: "Sibel'im 💗",
+          hitaplar: ["Birtanem", "Aşkım", "Güzelim", "Canım"],
+          welcome: "Tekrar hoş geldin Sibel'im 💕",
+          letter:
+`Sen bu sayfayı her açtığında, kilometrelerce öteden sana sarılıyorum demektir.
+Gülüşün en sevdiğim manzara, sesin en huzurlu şarkım.
+Bu küçük dünyayı senin için, sana olan sevgimle kurdum. İyi ki varsın birtanem. 💗`,
+          bullets: [
+            "Işıklı kelebeğim, karanlık olan her şeyimi aydınlatıyor",
+            "Senin gözlerine çok sözler yazılırdı ama ben bakıp kaldım",
+            "Sarhoş olmak için senin kokunu içime çekmek yetiyor",
+            "Ayıcığın baldan anlıyor 🐻🍯"
+          ]
+        },
+        "Oruç": {
+          partner: "Sibel",
+          heading: "Oruç'um 💙",
+          hitaplar: ["Sevdiğim", "Aşkım", "Canım", "Bir tanem"],
+          welcome: "Tekrar hoş geldin Oruç'um 💙",
+          letter:
+`Bu sayfa ikimizin; ama şu an burada olan sensin.
+Aramızdaki onca yol, onca özlem… hepsi bir gün kavuşmak için.
+Ne kadar uzakta olursak olalım, bu kalp hep aynı yöne atıyor. İyi ki bizde biziz. 💙`,
+          bullets: [
+            "Aynı gökyüzünün altında, aynı sevdayla",
+            "Mesafe sadece bir sayı; his hep yanında",
+            "Her gün bir öncekinden daha çok",
+            "Bu hikâyenin en güzel yeri: birlikte yazdığımız kısmı"
+          ]
+        }
+      },
 
       // Sık kullandığın hitaplar (etikette sırayla dönecek)
       hitaplar: ["Birtanem", "Aşkk", "Aşkım", "Güzelim"],
@@ -1454,8 +1687,9 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       birthday: "2000-11-08",
       birthdayMsg: "İyi ki doğdun, iyi ki varsın Sibel! 🎂 Bugün senin günün, tıpkı her gün olduğu gibi kalbimin baş köşesindesin. 💗",
 
-      // 🗺️ Aramızdaki mesafe (uzak mesafe görseli için)
-      distanceKm: 480,
+      // 🗺️ Aramızdaki mesafe — kişiye göre şehirler yer değiştirir
+      distanceKm: 330, // Aksaray–Gaziantep kuşuçuşu ~330 km
+      cities: { "Oruç": "Aksaray", "Sibel": "Gaziantep" },
       cityMine: "Benim Şehrim",
       cityHer: "Senin Şehrin",
 
@@ -1606,14 +1840,182 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       }
     }
 
-    // Galeri
-    const gallery = document.getElementById("gallery");
-    gallery.innerHTML = CONFIG.photos.map(p => `
-      <div class="ph">
-        <img src="${p.src}" alt="" loading="lazy">
-        <div class="cap">${escapeHtml(p.caption || "")}</div>
-      </div>
-    `).join("");
+    // 📸 Galeri modülü — 6 kutu rastgele döngü + ekle/sil (Firebase Storage) + realtime senkron
+    window.RSGallery = { photos: [] };
+    (function galleryModule(){
+      const gallery = document.getElementById("gallery");
+      const scrollEl = document.getElementById("galleryScroll");
+      const expandedEl = document.getElementById("galleryExpanded");
+      const countEl = document.getElementById("galleryCount");
+      const noteEl = document.getElementById("galleryUploadNote");
+      const fileInput = document.getElementById("photoFileInput");
+      const addBtn = document.getElementById("addPhotoBtn");
+      const expandBtn = document.getElementById("expandGalleryBtn");
+      if(!gallery) return;
+
+      const builtins = (CONFIG.photos || []).map(p => ({ src: p.src, kind: "builtin" }));
+      let hidden = [];       // gizlenen yerleşik fotoğraflar ("gallery" doc)
+      let userPhotos = [];   // kullanıcı fotoğrafları (galleryPhotos koleksiyonu, Firestore — ÜCRETSİZ)
+      let visible = []; // 6-grid'de gösterilen havuz indeksleri
+      let cloudOn = false;
+      if(typeof fbReady === "function"){ fbReady().then(ok => { cloudOn = !!ok; updateNote(); }); }
+
+      function effective(){
+        const hid = new Set(hidden || []);
+        const arr = builtins.filter(b => !hid.has(b.src));
+        (userPhotos || []).forEach(a => arr.push({ src: a.url, kind: "user", id: a.id, by: a.by || null }));
+        return arr;
+      }
+      function syncPool(){
+        const arr = effective();
+        RSGallery.photos.length = 0;
+        arr.forEach(x => RSGallery.photos.push(x));
+      }
+      function pickVisible(){
+        const pool = RSGallery.photos;
+        const n = Math.min(6, pool.length);
+        const idxs = pool.map((_, i) => i);
+        for(let i = idxs.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [idxs[i], idxs[j]] = [idxs[j], idxs[i]]; }
+        return idxs.slice(0, n);
+      }
+      function render6(){
+        const pool = RSGallery.photos;
+        if(!pool.length){
+          gallery.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--muted); padding:22px">Henüz fotoğraf yok. “＋ Fotoğraf Ekle” ile ilk anımızı ekle 💗</div>';
+          if(countEl) countEl.textContent = "";
+          return;
+        }
+        if(!visible.length || Math.max.apply(null, visible) >= pool.length) visible = pickVisible();
+        gallery.innerHTML = "";
+        visible.forEach((pi, tileIdx) => {
+          const tile = document.createElement("div");
+          tile.className = "phTile";
+          const img = document.createElement("img");
+          img.src = pool[pi].src; img.loading = "lazy"; img.alt = "";
+          tile.appendChild(img);
+          tile.onclick = () => { if(window.RSOpenLb) window.RSOpenLb(visible[tileIdx]); };
+          gallery.appendChild(tile);
+        });
+        if(countEl) countEl.textContent = pool.length + " fotoğraf";
+      }
+      function rotateOnce(){
+        const pool = RSGallery.photos;
+        if(pool.length <= 6 || !visible.length) return;
+        const tiles = gallery.querySelectorAll(".phTile");
+        if(tiles.length !== visible.length) return;
+        const tileIdx = Math.floor(Math.random() * visible.length);
+        const candidates = pool.map((_, i) => i).filter(i => !visible.includes(i));
+        if(!candidates.length) return;
+        const newPi = candidates[Math.floor(Math.random() * candidates.length)];
+        const tile = tiles[tileIdx];
+        const img = tile.querySelector("img");
+        tile.classList.add("swapping");
+        setTimeout(() => { visible[tileIdx] = newPi; img.src = pool[newPi].src; tile.classList.remove("swapping"); }, 280);
+      }
+      function renderExpanded(){
+        const pool = RSGallery.photos;
+        scrollEl.innerHTML = "";
+        if(!pool.length){ scrollEl.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--muted); padding:16px">Henüz fotoğraf yok.</div>'; }
+        pool.forEach((p, i) => {
+          const g = document.createElement("div");
+          g.className = "gph";
+          const img = document.createElement("img");
+          img.src = p.src; img.loading = "lazy"; img.alt = "";
+          img.onclick = () => { if(window.RSOpenLb) window.RSOpenLb(i); };
+          g.appendChild(img);
+          const del = document.createElement("button");
+          del.className = "gphDel"; del.textContent = "✕"; del.title = "Sil";
+          del.onclick = (e) => { e.stopPropagation(); confirmDelete(p); };
+          g.appendChild(del);
+          scrollEl.appendChild(g);
+        });
+        updateNote();
+      }
+      function updateNote(){
+        if(!noteEl) return;
+        noteEl.textContent = cloudOn
+          ? "💾 Fotoğraflar buluta (Firestore) kaydedilir; iki cihazdan da görünür ve kalıcıdır."
+          : "ℹ️ Şu an fotoğraflar bu cihazda saklanıyor (Firebase açılınca otomatik senkron olur).";
+      }
+      function applyState(){
+        syncPool(); render6();
+        if(expandedEl && expandedEl.style.display !== "none") renderExpanded();
+      }
+      async function saveHidden(){
+        try { await setDoc("gallery", { hidden: hidden || [] }, { merge: true }); }
+        catch(e){ console.warn("Galeri kaydetme hatası:", e); }
+      }
+      async function confirmDelete(p){
+        if(!confirm("Bu fotoğrafı silmek istediğine emin misin?")) return;
+        if(p.kind === "builtin"){
+          hidden = hidden || [];
+          if(!hidden.includes(p.src)) hidden.push(p.src);
+          applyState();
+          await saveHidden();
+        } else {
+          userPhotos = userPhotos.filter(x => x.id !== p.id);
+          applyState();
+          try { if(typeof deleteImageDoc === "function") await deleteImageDoc(p.id); } catch(e){}
+        }
+        if(typeof showToast === "function") showToast("Fotoğraf silindi", 1600);
+      }
+      function resizeImage(file, maxDim, asDataUrl){
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            let w = img.naturalWidth, h = img.naturalHeight;
+            const scale = Math.min(1, maxDim / Math.max(w, h));
+            w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+            const c = document.createElement("canvas"); c.width = w; c.height = h;
+            c.getContext("2d").drawImage(img, 0, 0, w, h);
+            if(asDataUrl) resolve(c.toDataURL("image/jpeg", 0.72));
+            else c.toBlob(b => b ? resolve(b) : reject(new Error("blob yok")), "image/jpeg", 0.85);
+          };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("resim yüklenemedi")); };
+          img.src = url;
+        });
+      }
+      if(addBtn && fileInput){
+        addBtn.onclick = () => fileInput.click();
+        fileInput.onchange = async () => {
+          const files = Array.from(fileInput.files || []); fileInput.value = "";
+          if(!files.length) return;
+          if(typeof showToast === "function") showToast("Fotoğraf ekleniyor…", 1500);
+          let ok = 0;
+          for(const f of files){
+            if(!f.type || !f.type.startsWith("image/")) continue;
+            try {
+              const dataUrl = await resizeImage(f, 1000, true);
+              const id = (typeof addImageDoc === "function") ? await addImageDoc(dataUrl, window.currentUser || "?") : null;
+              if(id && !userPhotos.some(x => x.id === id)) userPhotos.push({ id, url: dataUrl, by: window.currentUser || "?", ts: Date.now() });
+              ok++;
+              if(window.Ach) window.Ach.bump("photo");
+              applyState();
+            } catch(e){ console.warn("Foto ekleme hatası:", e); }
+          }
+          if(typeof showToast === "function") showToast(ok ? ("Fotoğraf eklendi 💗 (" + ok + ")") : "Fotoğraf eklenemedi 😕", 2200);
+        };
+      }
+      if(expandBtn && expandedEl){
+        expandBtn.onclick = () => {
+          const opening = expandedEl.style.display === "none";
+          expandedEl.style.display = opening ? "" : "none";
+          expandBtn.textContent = opening ? "🔼 Kapat" : "🖼️ Tümünü Gör";
+          if(opening) renderExpanded();
+        };
+      }
+      // İlk çizim (yerleşik fotoğraflar hemen görünsün), sonra realtime senkron
+      syncPool(); render6();
+      if(typeof subscribeDoc === "function"){
+        subscribeDoc("gallery", (data) => { data = data || {}; hidden = Array.isArray(data.hidden) ? data.hidden : []; applyState(); });
+      }
+      if(typeof subscribeImages === "function"){
+        subscribeImages((arr) => { userPhotos = Array.isArray(arr) ? arr.filter(x => x && x.url) : []; applyState(); });
+      }
+      setInterval(() => { if(!document.hidden) rotateOnce(); }, 3500);
+    })();
 
     // Kalpler (arka plan)
     const hearts = document.getElementById("hearts");
@@ -1668,24 +2070,160 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         .replaceAll("'","&#039;");
     }
 
-    // Müzik — tarayıcı autoplay engeli: ilk tıklamada başlat
+    /* =========================================================
+       🎧 MÜZİK ÇALAR — YouTube + yerel, çalma listesi, realtime senkron
+       ========================================================= */
     const bgMusic = document.getElementById("bgMusic");
-    const musicOverlay = document.getElementById("musicStartOverlay");
-    function startMusic() {
-      if (!bgMusic) return;
-      musicOverlay.style.display = "none";
-      bgMusic.style.display = "block";
-      bgMusic.play().catch(() => {});
-    }
-    musicOverlay.addEventListener("click", startMusic);
-    // Otomatik dene (bazı tarayıcılarda çalışır)
-    if (bgMusic) {
-      bgMusic.play().then(() => {
-        musicOverlay.style.display = "none";
-        bgMusic.style.display = "block";
-      }).catch(() => {});
-      bgMusic.addEventListener("ended", () => { bgMusic.currentTime = 0; bgMusic.play().catch(() => {}); });
-    }
+    const MusicPlayer = (function(){
+      const overlay = document.getElementById("musicStartOverlay");
+      const playerBox = document.getElementById("musicPlayer");
+      const listEl = document.getElementById("playlistList");
+      const npTitle = document.getElementById("npTitle");
+      const npState = document.getElementById("npState");
+      const npDisc = document.getElementById("npDisc");
+      const npPlay = document.getElementById("npPlay");
+      if(!bgMusic || !overlay) return { start:function(){}, };
+      const localDefault = { id:"local-m1", kind:"local", src:"Music/m1.mp3", title:"Bizim Şarkımız 🎵" };
+      let yt = [];                 // DB'deki YouTube şarkıları
+      let tracks = [localDefault]; // yerel + youtube
+      let cur = 0, playing = false, started = false, pickedDefault = false;
+      let ytPlayer = null, ytReady = false, ytPendingId = null, ytPendingPlay = false;
+
+      function rebuild(){
+        tracks = [localDefault].concat(yt.map(s => ({ id:s.id, kind:"yt", title:s.title || "YouTube Şarkısı" })));
+        if(cur >= tracks.length) cur = 0;
+      }
+      // ---- YouTube IFrame API ----
+      window.onYouTubeIframeAPIReady = function(){
+        try{
+          ytPlayer = new YT.Player("ytHost", {
+            height:"1", width:"1", playerVars:{ playsinline:1 },
+            events:{
+              onReady: function(){ ytReady = true; if(ytPendingId){ ytPlayer.loadVideoById(ytPendingId); if(!ytPendingPlay){ setTimeout(function(){ try{ytPlayer.pauseVideo();}catch(e){}},250); } ytPendingId=null; } },
+              onStateChange: function(e){
+                if(e.data === YT.PlayerState.ENDED){ next(); }
+                else if(e.data === YT.PlayerState.PLAYING){ setPlaying(true); }
+                else if(e.data === YT.PlayerState.PAUSED){ setPlaying(false); }
+              },
+              onError: function(){ if(npState) npState.textContent = "Bu şarkı oynatılamadı, sonrakine geçiliyor…"; setTimeout(next, 1200); }
+            }
+          });
+        }catch(e){ console.warn("YT player hatası:", e); }
+      };
+      (function loadYtApi(){
+        if(window.YT && window.YT.Player){ window.onYouTubeIframeAPIReady(); return; }
+        if(document.getElementById("ytApiScript")) return;
+        const s = document.createElement("script"); s.id="ytApiScript"; s.src="https://www.youtube.com/iframe_api";
+        s.onerror = function(){ console.warn("YouTube IFrame API yüklenemedi"); };
+        document.head.appendChild(s);
+      })();
+
+      function setPlaying(p){ playing = p; if(npPlay) npPlay.textContent = p ? "⏸" : "▶"; if(npDisc) npDisc.classList.toggle("spin", p); if(npState) npState.textContent = p ? "Çalıyor" : "Duraklatıldı"; renderList(); }
+
+      function playIndex(i, autoplay){
+        rebuild(); if(!tracks.length) return;
+        cur = (i + tracks.length) % tracks.length;
+        const t = tracks[cur];
+        if(npTitle) npTitle.textContent = t.title;
+        if(t.kind === "local"){
+          try{ if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo(); }catch(e){}
+          if(bgMusic.getAttribute("src") !== t.src) bgMusic.src = t.src;
+          if(autoplay){ bgMusic.play().then(()=>setPlaying(true)).catch(()=>{ if(npState) npState.textContent="Başlatmak için ▶ tıkla"; }); }
+          else setPlaying(false);
+        } else {
+          try{ bgMusic.pause(); }catch(e){}
+          if(ytReady && ytPlayer){ ytPlayer.loadVideoById(t.id); if(!autoplay) setTimeout(()=>{ try{ytPlayer.pauseVideo();}catch(e){} }, 250); }
+          else { ytPendingId = t.id; ytPendingPlay = !!autoplay; }
+          setPlaying(!!autoplay);
+        }
+        renderList();
+      }
+      function next(){ playIndex(cur+1, true); }
+      function prev(){ playIndex(cur-1, true); }
+      function toggle(){
+        if(!started){ start(); return; }
+        const t = tracks[cur];
+        if(t.kind === "local"){ if(bgMusic.paused){ bgMusic.play().then(()=>setPlaying(true)).catch(()=>{}); } else { bgMusic.pause(); setPlaying(false); } }
+        else if(ytPlayer){ if(playing){ try{ytPlayer.pauseVideo();}catch(e){} } else { try{ytPlayer.playVideo();}catch(e){} } }
+      }
+      function start(){ started = true; if(overlay) overlay.style.display="none"; if(playerBox) playerBox.style.display=""; playIndex(cur, true); if(window.Ach) window.Ach.event("music"); }
+
+      function renderList(){
+        if(!listEl) return;
+        listEl.innerHTML = "";
+        tracks.forEach((t, i) => {
+          const item = document.createElement("div");
+          item.className = "plItem" + (i===cur ? " active" : "");
+          item.innerHTML = '<div class="plIcon">'+(t.kind==="local"?"🎵":"▶️")+'</div><div class="plName"></div><div class="plBars"><span></span><span></span><span></span></div>';
+          item.querySelector(".plName").textContent = t.title;
+          item.onclick = ()=>{ if(!started){ started=true; if(overlay) overlay.style.display="none"; if(playerBox) playerBox.style.display=""; } playIndex(i, true); };
+          if(t.kind === "yt"){
+            const del = document.createElement("button");
+            del.className="plDel"; del.textContent="✕"; del.title="Kaldır";
+            del.onclick = (e)=>{ e.stopPropagation(); removeSong(t.id); };
+            item.appendChild(del);
+          }
+          listEl.appendChild(item);
+        });
+      }
+      async function removeSong(id){
+        yt = yt.filter(s => s.id !== id);
+        rebuild(); renderList();
+        try{ await setCollection("playlist", yt); }catch(e){}
+        if(typeof showToast==="function") showToast("Şarkı kaldırıldı", 1600);
+      }
+      function ytIdFromUrl(url){
+        if(!url) return null; url = url.trim();
+        const m = url.match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/);
+        if(m) return m[1];
+        if(/^[A-Za-z0-9_-]{11}$/.test(url)) return url;
+        return null;
+      }
+      async function fetchTitle(id){
+        try{ const r = await fetch("https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v="+id); if(r.ok){ const j = await r.json(); return j.title || null; } }catch(e){}
+        return null;
+      }
+      async function addSong(url, title){
+        const id = ytIdFromUrl(url);
+        if(!id){ if(typeof showToast==="function") showToast("Geçerli bir YouTube linki yapıştır 🎵", 2600); return false; }
+        if(yt.some(s => s.id === id)){ if(typeof showToast==="function") showToast("Bu şarkı zaten listede 💗", 2200); return false; }
+        let t = (title||"").trim();
+        if(!t) t = (await fetchTitle(id)) || "YouTube Şarkısı";
+        yt.push({ id, title:t, by: window.currentUser||"?", ts: Date.now() });
+        rebuild(); renderList();
+        try{ await setCollection("playlist", yt); }catch(e){}
+        if(window.Ach) window.Ach.bump("song");
+        if(typeof showToast==="function") showToast("Şarkı eklendi 🎶", 2000);
+        return true;
+      }
+
+      bgMusic.addEventListener("ended", ()=> next());
+
+      if(typeof subscribeCollection === "function"){
+        subscribeCollection("playlist", (arr)=>{
+          yt = Array.isArray(arr) ? arr.filter(s=>s&&s.id) : [];
+          rebuild();
+          if(!pickedDefault){ pickedDefault = true; if(!started){ cur = Math.floor(Math.random()*tracks.length); if(tracks[cur] && npTitle) npTitle.textContent = tracks[cur].title; } }
+          renderList();
+        });
+      } else { rebuild(); renderList(); }
+
+      // UI olayları
+      if(npPlay) npPlay.onclick = toggle;
+      const nN=document.getElementById("npNext"); if(nN) nN.onclick = next;
+      const nP=document.getElementById("npPrev"); if(nP) nP.onclick = prev;
+      overlay.addEventListener("click", start);
+      const addBtn = document.getElementById("addSongBtn");
+      const urlInp = document.getElementById("songUrlInput");
+      const titleInp = document.getElementById("songTitleInput");
+      if(addBtn){ addBtn.onclick = async ()=>{ const ok = await addSong(urlInp.value, titleInp.value); if(ok){ urlInp.value=""; titleInp.value=""; } }; }
+      if(urlInp){ urlInp.addEventListener("keydown", e=>{ if(e.key==="Enter" && addBtn){ addBtn.click(); } }); }
+      renderList();
+
+      return { start, playIndex, next, prev, addSong, _debug: ()=>({ tracks: tracks.map(t=>t.title), cur, playing, started, ytReady }) };
+    })();
+    function startMusic(){ try{ MusicPlayer.start(); }catch(e){} }
+    window.MusicPlayer = MusicPlayer;
 
     // ========== İZLEME & DİNLEME LİSTELERİ ==========
     let listFilter = "all"; // all | pending | done
@@ -1757,7 +2295,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       inputEl.addEventListener("paste", () => setTimeout(sync, 0));
     }
     // ========== EŞLEŞTİRME OYUNU ==========
-    const MEM_STATS_KEY = "romantik_memory_wins";
+    const MEM_STATS_KEY = "romantik_memory_wins_" + (window.currentUser || "guest"); // kişiye özel
     function getMemStats() { try { return JSON.parse(localStorage.getItem(MEM_STATS_KEY) || '{"p1":0,"p2":0}'); } catch { return {p1:0,p2:0}; } }
     function setMemStats(s) { localStorage.setItem(MEM_STATS_KEY, JSON.stringify(s)); }
     document.getElementById("gameMemoryBtn").onclick = () => {
@@ -1860,7 +2398,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
 
     // ========== AYI AVI ==========
     const WHACK_FILLERS = ["🐹","🐰","🐱","🦔","🐿️"]; // +1 dolgu hayvanları
-    const WHACK_BEST_KEY = "romantik_whack_best";
+    const WHACK_BEST_KEY = "romantik_whack_best_" + (window.currentUser || "guest"); // kişiye özel
     // olasılık dilimleri: bomb + civ + heart + bear, kalanı dolgu (+1)
     const whackDiffs = {
       easy:   { holes:6, spawnMin:700, spawnMax:1100, visMin:1050, visMax:1600, maxUp:2, bomb:0.08, civ:0.12, heart:0.12, bear:0.28 },
@@ -1993,11 +2531,13 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     };
 
     // ========== SÜRPRIZ AŞK KUTUSU ==========
-    document.getElementById("askKutuBtn").onclick = () => {
-      const r = Math.random();
-      if (r < 0.5) openSeviyorModal();
-      else openPapatyaModal();
-    };
+    // Sürpriz kutusundaki 2 şey artık Oyunlar bölümünde ayrı butonlar
+    (function bindSurpriseGames(){
+      const s = document.getElementById("gameSeviyorBtn");
+      const p = document.getElementById("gamePapatyaBtn");
+      if(s) s.onclick = () => openSeviyorModal();
+      if(p) p.onclick = () => openPapatyaModal();
+    })();
     function openSeviyorModal() {
       evetScale = 1; hayirScale = 1;
       document.getElementById("seviyorBtnWrap").style.display = "flex";
@@ -2074,28 +2614,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     document.getElementById("papatyaKapat").onclick = () => document.getElementById("askKutuPapatyaModal").classList.remove("open");
     document.getElementById("askKutuPapatyaModal").addEventListener("click", e => { if (e.target.id === "askKutuPapatyaModal") e.target.classList.remove("open"); });
 
-    // ========== RANDEVU ÇARKI ==========
-    let lastSpin = null; let spinUsed = false;
-    document.getElementById("spinDateBtn").onclick = () => {
-      const ideas = getAllDateIdeas() || [];
-      if (!ideas.length) return;
-      const pick = ideas[Math.floor(Math.random() * ideas.length)];
-      if (!pick) return;
-      lastSpin = pick; spinUsed = false;
-      document.getElementById("dateResult").style.display = "block";
-      document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}${pick.task ? `<br>${pick.task}` : ""}${pick.req && pick.req !== "-" ? `<br><small>${pick.req}</small>` : ""}`;
-      document.getElementById("spinAgainBtn").style.display = "inline-block";
-    };
-    document.getElementById("spinAgainBtn").onclick = () => {
-      if (spinUsed) { alert("Bugün sadece 1 kez yeniden çevirebilirsin!"); return; }
-      spinUsed = true;
-      const ideas = getAllDateIdeas().filter(x => x && x.title !== lastSpin?.title);
-      const pick = ideas.length > 0 ? ideas[Math.floor(Math.random() * ideas.length)] : lastSpin;
-      if (pick) {
-        lastSpin = pick;
-        document.getElementById("dateResult").innerHTML = `<strong>${pick.title}</strong><br><span style="color:var(--muted);">${pick.duration}</span> · ${pick.category}${pick.task ? `<br>${pick.task}` : ""}${pick.req && pick.req !== "-" ? `<br><small>${pick.req}</small>` : ""}`;
-      }
-    };
+    // (Randevu Çarkı bölümü kaldırıldı)
 
     // ========== OYUNLAR ==========
     // ========== BEN SENİ NE KADAR TANIYORUM ==========
@@ -2220,6 +2739,50 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     const PARTNER = { "Oruç":"Sibel", "Sibel":"Oruç" };
     function uk(base){ return base + "_" + (window.currentUser || "guest"); } // kişiye özel localStorage anahtarı
 
+    /* Kişiye özel görünüm yardımcıları — giriş yapan kişiye (viewer) göre içerik */
+    function viewerName(){ return window.currentUser || CONFIG.loverName || "Sevgilim"; }
+    function partnerName(){ return PARTNER[window.currentUser] || "Sevgilim"; }
+    function viewerCfg(){
+      const p = (CONFIG.people && (CONFIG.people[window.currentUser] || CONFIG.people[CONFIG.loverName]));
+      return p || { partner: partnerName(), heading: viewerName()+" 💗", hitaplar: CONFIG.hitaplar||["Aşkım"], welcome: "Tekrar hoş geldin 💕", letter: "", bullets: [] };
+    }
+    // Oruç ayarlarından düzenlenen açılış metinleri (varsa CONFIG'i ezer). Batch 7'de doldurulur.
+    window.__openingOverride = null;
+    function viewerOpening(){
+      const base = viewerCfg();
+      const ov = (window.__openingOverride && window.__openingOverride[window.currentUser]) || null;
+      return Object.assign({}, base, ov || {});
+    }
+    let _hitapTimer = null;
+    function renderOpeningLetter(){
+      const card = document.getElementById("openingCard");
+      if(!card) return;
+      const o = viewerOpening();
+      const heading = document.getElementById("openingHeading");
+      const letter = document.getElementById("openingLetter");
+      const bullets = document.getElementById("openingBullets");
+      const hitapEl = document.getElementById("openingHitap");
+      if(heading) heading.textContent = o.heading || (viewerName() + " 💗");
+      if(letter) letter.textContent = o.letter || "";
+      if(bullets){
+        bullets.innerHTML = "";
+        (o.bullets || []).forEach(b => { const li = document.createElement("li"); li.textContent = b; bullets.appendChild(li); });
+        bullets.style.display = (o.bullets && o.bullets.length) ? "" : "none";
+      }
+      // Hitap rotasyonu
+      const hitaplar = (o.hitaplar && o.hitaplar.length) ? o.hitaplar : ["Aşkım"];
+      let hi = 0;
+      const setHitap = ()=>{ if(hitapEl){ hitapEl.textContent = "💌 " + hitaplar[hi % hitaplar.length]; hi++; } };
+      setHitap();
+      if(_hitapTimer) clearInterval(_hitapTimer);
+      _hitapTimer = setInterval(setHitap, 3200);
+      card.style.display = "";
+    }
+    // Oruç ayarlarından açılış mektubu düzenlemeleri
+    if(typeof subscribeDoc === "function"){
+      subscribeDoc("openingLetters", (d)=>{ if(d && (d["Oruç"] || d["Sibel"])) { window.__openingOverride = d; if(document.getElementById("openingCard") && document.getElementById("openingCard").style.display !== "none") renderOpeningLetter(); } });
+    }
+
     /* =========================================================
        KONSEPTLER — her girişte rastgele biri yüklenir
        ========================================================= */
@@ -2317,7 +2880,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
        ========================================================= */
     const intro = $("introOverlay");
     const envelope = $("envelope");
-    if($("introName")) $("introName").textContent = (CONFIG.loverName || "Sana") + " için";
+    if($("introName")) $("introName").textContent = viewerName() + " için";
     let introDone = false;
     function openIntro(){
       if(introDone) return; introDone = true;
@@ -2333,9 +2896,10 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
 
     function showWelcome(){
       const t = $("welcomeToast");
-      t.textContent = `Tekrar hoş geldin, ${CONFIG.loverName || "Sevgilim"} 💕`;
+      t.textContent = viewerOpening().welcome || `Tekrar hoş geldin, ${viewerName()} 💕`;
       t.classList.add("show");
       setTimeout(()=> t.classList.remove("show"), 4200);
+      renderOpeningLetter();
     }
 
     /* =========================================================
@@ -2367,7 +2931,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     /* =========================================================
        3D TILT KART EFEKTİ
        ========================================================= */
-    const tiltEls = document.querySelectorAll(".wrap > section.card, .hero");
+    const tiltEls = document.querySelectorAll(".wrap > section.card:not(.noTilt), .hero");
     tiltEls.forEach(card=>{
       card.addEventListener("pointermove", (e)=>{
         if(window.innerWidth < 700) return;
@@ -2382,10 +2946,11 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     /* =========================================================
        LIGHTBOX GALERİ
        ========================================================= */
-    const photos = (CONFIG.photos || []);
+    const photos = (window.RSGallery && window.RSGallery.photos) ? window.RSGallery.photos : (CONFIG.photos || []);
     const lb = $("lightbox"), lbImg = $("lbImg"), lbCap = $("lbCap");
     let lbIndex = 0;
-    function openLb(i){ lbIndex = (i+photos.length)%photos.length; const p = photos[lbIndex]; lbImg.src = p.src; lbCap.textContent = p.caption || ""; lb.classList.add("open"); }
+    function openLb(i){ if(!photos.length) return; lbIndex = (i+photos.length)%photos.length; const p = photos[lbIndex]; lbImg.src = p.src; lbCap.textContent = p.caption || ""; lb.classList.add("open"); }
+    window.RSOpenLb = openLb;
     function closeLb(){ lb.classList.remove("open"); }
     $("lbClose").onclick = closeLb;
     $("lbNext").onclick = (e)=>{ e.stopPropagation(); openLb(lbIndex+1); };
@@ -2433,7 +2998,21 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       return Math.floor((now - start)/86400000);
     }
     $("dailyCompliment").textContent = comps[dayIndex() % comps.length];
-    $("newComplimentBtn").onclick = ()=>{ $("dailyCompliment").textContent = comps[Math.floor(Math.random()*comps.length)]; };
+
+    /* =========================================================
+       ⏱️ 24 SAATLİK KİLİT — kişiye özel, kalıcı, cihazlar arası
+       (balon, dilek vb. günde 1 kez için ortak yardımcı)
+       ========================================================= */
+    const DailyLock = (function(){
+      let cache = {};
+      if(typeof subscribeDoc === "function") subscribeDoc("dailyLocks", d=>{ cache = d || {}; document.dispatchEvent(new CustomEvent("dailyLocksUpdated")); });
+      function ts(f){ const u = cache[window.currentUser] || {}; const local = parseInt(localStorage.getItem(uk("lock_"+f))||"0",10)||0; return Math.max(u[f]||0, local); }
+      function mark(f){ const now=Date.now(); localStorage.setItem(uk("lock_"+f), String(now)); cache[window.currentUser]=cache[window.currentUser]||{}; cache[window.currentUser][f]=now; if(typeof setDoc==="function"){ const p={}; p[window.currentUser]=cache[window.currentUser]; try{ Promise.resolve(setDoc("dailyLocks", p)).catch(function(){}); }catch(e){} } return Promise.resolve(); }
+      function remainingMs(f){ return Math.max(0, ts(f)+86400000 - Date.now()); }
+      function available(f){ return remainingMs(f) <= 0; }
+      return { ts, mark, remainingMs, available };
+    })();
+    function fmtCountdown(ms){ let s=Math.floor(ms/1000); const h=Math.floor(s/3600); s-=h*3600; const m=Math.floor(s/60); s-=m*60; return (h>0?h+" saat ":"")+m+" dk "+s+" sn"; }
 
     /* =========================================================
        SENİ SEVİYORUM SAYACI
@@ -2444,6 +3023,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     $("loveBtn").addEventListener("click", (e)=>{
       loveN++; localStorage.setItem(loveKey, loveN);
       $("loveCount").textContent = loveN;
+      if(window.RSLoveRain) window.RSLoveRain.inc("love");
       if(typeof burstHearts === "function") burstHearts();
       // butonun üstünde uçan kalp
       const fly = document.createElement("div");
@@ -2468,30 +3048,50 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     ];
     const balloonColors = ["#ff4d8d","#9b5cff","#35c9d6","#ffb347","#ff6f91","#8fd3ff","#69db7c","#ff5d8f"];
     const bf = $("balloonField");
-    function buildBalloons(){
-      bf.innerHTML = "";
-      balloonMsgs.forEach((msg,i)=>{
+    // İçerik: Oruç ayarlarından gelir (window.__balloonMsgs); yoksa varsayılan liste
+    window.__balloonMsgsDefault = balloonMsgs;
+    function getBalloonMsgs(){ return (Array.isArray(window.__balloonMsgs) && window.__balloonMsgs.length) ? window.__balloonMsgs : balloonMsgs; }
+    let balloonTimer = null;
+    function renderBalloon(){
+      if(!bf) return;
+      if(balloonTimer){ clearInterval(balloonTimer); balloonTimer = null; }
+      const msgs = getBalloonMsgs();
+      if(DailyLock.available("balloon")){
+        bf.innerHTML = "";
+        const idx = parseInt(localStorage.getItem(uk("balloon_idx"))||"0",10)||0;
+        const col = balloonColors[idx % balloonColors.length];
         const b = document.createElement("div");
-        b.className = "balloon";
-        const col = balloonColors[i % balloonColors.length];
+        b.className = "balloon"; b.title = "Patlat!";
         b.style.background = `radial-gradient(circle at 35% 30%, ${hexA(col,1)}, ${hexA(col,.65)})`;
         b.style.borderBottomColor = col;
-        b.style.animationDelay = (i*0.25)+"s";
-        b.title = "Patlat!";
-        b.addEventListener("click", ()=>{
+        b.addEventListener("click", async ()=>{
           if(b.classList.contains("pop")) return;
           b.classList.add("pop");
+          const msg = msgs[idx % msgs.length];
           $("balloonMsg").textContent = msg;
+          localStorage.setItem(uk("balloon_idx"), String(idx+1));
           if(typeof burstConfetti === "function") burstConfetti();
-          setTimeout(()=> b.remove(), 380);
-          if(bf.querySelectorAll(".balloon:not(.pop)").length <= 1){
-            setTimeout(buildBalloons, 900);
-          }
+          await DailyLock.mark("balloon");
+          if(window.Ach) window.Ach.bump("balloon");
+          setTimeout(()=>{ if(b.parentNode) b.remove(); renderBalloon(); }, 520);
         });
         bf.appendChild(b);
-      });
+        if($("balloonMsg")) $("balloonMsg").textContent = "Bugünün balonunu patlat 🎈";
+      } else {
+        bf.innerHTML = '<div class="balloonLocked">🎈 Bugünün balonunu patlattın 💗 Yeni balon: <b id="balloonCd"></b></div>';
+        const lastIdx = (parseInt(localStorage.getItem(uk("balloon_idx"))||"1",10)||1) - 1;
+        const li = ((lastIdx % msgs.length) + msgs.length) % msgs.length;
+        if($("balloonMsg")) $("balloonMsg").textContent = msgs[li] || "";
+        const upd = ()=>{ const cd=document.getElementById("balloonCd"); if(cd) cd.textContent = fmtCountdown(DailyLock.remainingMs("balloon")); if(DailyLock.available("balloon")) renderBalloon(); };
+        upd(); balloonTimer = setInterval(upd, 1000);
+      }
     }
-    buildBalloons();
+    renderBalloon();
+    document.addEventListener("dailyLocksUpdated", renderBalloon);
+    // Oruç ayarlarından balon mesajları (herkese yansır)
+    if(typeof subscribeCollection === "function"){
+      subscribeCollection("balloonMsgs", (arr)=>{ if(Array.isArray(arr) && arr.length) window.__balloonMsgs = arr.filter(x=>typeof x==="string" && x.trim()); renderBalloon(); });
+    }
 
     /* =========================================================
        ŞİFRELİ KASA — rastgele soru + esnek cevap eşleşmesi
@@ -2527,49 +3127,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       });
     }
 
-    let vaultQs = (CONFIG.vaultQuestions || []).slice();
-    let vaultCur = null;
-    function pickVaultQuestion(){
-      if(!vaultQs.length){ $("vaultQuestion").textContent = "Henüz soru eklenmedi."; return; }
-      let next = vaultQs[Math.floor(Math.random()*vaultQs.length)];
-      if(vaultQs.length > 1 && vaultCur){ let g=0; while(next===vaultCur && g++<8) next = vaultQs[Math.floor(Math.random()*vaultQs.length)]; }
-      vaultCur = next;
-      $("vaultQuestion").textContent = "❓ " + (next.q || "");
-      $("vaultInput").value = "";
-      $("vaultResult").style.display = "none";
-    }
-    // İleride admin'den eklenen sorular varsa birleştir
-    (async function loadVaultExtra(){
-      try{
-        if(typeof getCollection === "function"){
-          const extra = await getCollection("vaultQuestions");
-          if(Array.isArray(extra) && extra.length){
-            vaultQs = vaultQs.concat(extra.filter(x=>x && x.q && Array.isArray(x.answers)));
-          }
-        }
-      }catch(e){}
-      pickVaultQuestion();
-    })();
-
-    $("vaultBtn").addEventListener("click", ()=>{
-      if(!vaultCur) return;
-      const res = $("vaultResult");
-      res.style.display = "block";
-      if(answerMatches($("vaultInput").value, vaultCur.answers)){
-        res.style.borderStyle = "solid";
-        res.innerHTML = "🎉 <strong>Kasa açıldı!</strong><br><br>"+
-          "Bu kasanın içinde en değerli hazineyi sakladım: <strong>sen</strong>. "+
-          "Seni tanıdığım günden beri hayatım çok daha anlamlı. Seni seviyorum 💗";
-        if(typeof burstConfetti === "function") burstConfetti();
-        if(typeof burstHearts === "function") burstHearts();
-        document.dispatchEvent(new CustomEvent("achEvent",{detail:"vault"}));
-      } else {
-        res.style.borderStyle = "dashed";
-        res.innerHTML = "🔒 Cevap tam olmadı, bir daha dene 💭 (yeni soru için 🔄'ya bas)";
-      }
-    });
-    $("vaultNextBtn").addEventListener("click", pickVaultQuestion);
-    $("vaultInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("vaultBtn").click(); });
+    // (Bize Özel Kasa bölümü kaldırıldı)
 
     /* =========================================================
        ÖZEL GÜN MODU (yıldönümü / 14 Şubat)
@@ -2663,7 +3221,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     $("cookieAgain").addEventListener("click", ()=>{ $("cookieEl").textContent="🥠"; $("fortunePaper").style.display="none"; $("cookieAgain").style.display="none"; });
 
     /* --- Kalp Yakala --- */
-    const CATCH_BEST_KEY = "romantik_catch_best";
+    const CATCH_BEST_KEY = "romantik_catch_best_" + (window.currentUser || "guest"); // kişiye özel
     let catchG = { playing:false, score:0, time:20, best:0, items:[], rafId:null, spawnId:null, tickId:null, last:0 };
     $("catchBest").textContent = catchG.best = parseInt(localStorage.getItem(CATCH_BEST_KEY)||"0",10)||0;
     $("gameCatchBtn").addEventListener("click", ()=>{
@@ -2749,7 +3307,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     /* =========================================================
        🎬 SİNEMATİK ANI SLAYT GÖSTERİSİ
        ========================================================= */
-    const slPhotos = CONFIG.photos || [];
+    const slPhotos = (window.RSGallery && window.RSGallery.photos) ? window.RSGallery.photos : (CONFIG.photos || []);
     const slEl = $("slideshow"), frA = $("slFrameA"), frB = $("slFrameB"), prog = $("slProgress");
     const sl = { i:0, playing:true, timer:null, dur:5000, active:"A" };
     function slShow(i){
@@ -2846,6 +3404,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     if($("kissBtn")) $("kissBtn").addEventListener("click", ()=>{
       const r = $("kissBtn").getBoundingClientRect();
       flyKisses(r.left + r.width/2, r.top, 10);
+      if(window.RSLoveRain) window.RSLoveRain.inc("kiss");
     });
 
     /* =========================================================
@@ -2865,6 +3424,34 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         setTimeout(()=> h.remove(), 5600);
       }
     }
+    function emojiRain(n, emojis, cap){
+      const total = Math.max(0, Math.min(n||0, cap||250));
+      for(let i=0;i<total;i++){
+        const h=document.createElement("div"); h.className="rainHeart"; h.textContent=emojis[i%emojis.length];
+        h.style.left=(Math.random()*100)+"vw"; h.style.fontSize=(16+Math.random()*22)+"px";
+        h.style.setProperty("--rd",(2.4+Math.random()*2.8)+"s"); h.style.setProperty("--rr",(Math.random()*360)+"deg");
+        h.style.animationDelay=(Math.random()*Math.max(0.6, Math.min(3.5, total/70)))+"s";
+        document.body.appendChild(h); setTimeout(()=>h.remove(),6400);
+      }
+    }
+    /* 💞 SEVGİ YAĞMURU — karşı taraf bugün ne kadar bastıysa, sen sayfayı açınca o kadar yağar. Her gün 00:00'da sıfırlanır. */
+    (function loveRain(){
+      function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+      const KEY="loveRain"; let data={}; let lastPartner=null;
+      function rainFor(pd){ if(!pd) return; const love=pd.love||0, kiss=pd.kiss||0;
+        if(love>0) emojiRain(love, ["💖","💗","💕","❤️","💘"], 250);
+        if(kiss>0) emojiRain(kiss, ["😘","💋"], 250);
+        if((love+kiss)>0 && typeof showToast==="function"){ const p=PARTNER[window.currentUser]||"O"; showToast(p+" bugün sana "+love+" sevgi 💖 ve "+kiss+" öpücük 😘 gönderdi!", 5000); }
+      }
+      async function inc(type){ const t=todayKey(); data[t]=data[t]||{}; const m=me(); data[t][m]=data[t][m]||{love:0,kiss:0}; data[t][m][type]=(data[t][m][type]||0)+1; Object.keys(data).forEach(k=>{ if(k!==t) delete data[k]; }); try{ if(typeof setDoc==="function") await setDoc(KEY, data, {merge:false}); }catch(e){} }
+      window.RSLoveRain={ inc };
+      if(typeof subscribeDoc==="function"){
+        subscribeDoc(KEY,(d)=>{ data=d||{}; const t=todayKey(); const pd=(data[t]||{})[PARTNER[window.currentUser]]||{love:0,kiss:0};
+          if(lastPartner===null){ lastPartner={love:pd.love||0,kiss:pd.kiss||0}; setTimeout(()=>rainFor(pd), 2200); }
+          else { const dl=(pd.love||0)-lastPartner.love, dk=(pd.kiss||0)-lastPartner.kiss; lastPartner={love:pd.love||0,kiss:pd.kiss||0}; if(dl>0||dk>0) rainFor({love:Math.max(0,dl),kiss:Math.max(0,dk)}); }
+        });
+      }
+    })();
     // 1) İsmini yaz → kalp yağmuru
     const nameTarget = normAns(CONFIG.loverName || "sibel");
     let typeBuf = "";
@@ -2893,7 +3480,10 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
        ========================================================= */
     (function capsules(){
       const list = $("capsuleList");
-      const caps = (CONFIG.timeCapsules || []).slice().sort((a,b)=> String(a.unlock).localeCompare(String(b.unlock)));
+      if(!list) return;
+      function render(){
+      const src = (Array.isArray(window.__capsules) && window.__capsules.length) ? window.__capsules : (CONFIG.timeCapsules || []);
+      const caps = src.slice().filter(c=>c && c.unlock).sort((a,b)=> String(a.unlock).localeCompare(String(b.unlock)));
       if(!caps.length){ list.innerHTML = "<p style='color:var(--muted)'>Henüz kapsül yok.</p>"; return; }
       const now = Date.now();
       list.innerHTML = "";
@@ -2917,6 +3507,12 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         }
         list.appendChild(el);
       });
+      }
+      window.renderCapsules = render;
+      render();
+      if(typeof subscribeCollection === "function"){
+        subscribeCollection("capsules", (arr)=>{ if(Array.isArray(arr) && arr.length) window.__capsules = arr; render(); });
+      }
     })();
     $("capsuleModalClose").addEventListener("click", ()=> $("capsuleModal").classList.remove("open"));
     $("capsuleModal").addEventListener("click", e=>{ if(e.target.id==="capsuleModal") e.target.classList.remove("open"); });
@@ -2979,7 +3575,7 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
        ========================================================= */
     (function puzzle(){
       const board = $("puzzleBoard");
-      const photos = (CONFIG.photos || []);
+      const photos = (window.RSGallery && window.RSGallery.photos && window.RSGallery.photos.length) ? window.RSGallery.photos : (CONFIG.photos || []);
       let N=3, tiles=[], emptyIdx=0, moves=0, secs=0, timer=null, imgSrc="";
       function openP(){ imgSrc = ((photos[Math.floor(Math.random()*photos.length)]||{}).src) || ""; $("puzzleModal").classList.add("open"); setTimeout(newGame, 60); }
       function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const tmp=a[i]; a[i]=a[j]; a[j]=tmp; } }
@@ -3071,15 +3667,28 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         if(shooting){ shooting.x+=shooting.vx; shooting.y+=shooting.vy; shooting.life--; ctx.globalAlpha=Math.max(0,shooting.life/shooting.max); ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(shooting.x,shooting.y); ctx.lineTo(shooting.x-shooting.vx*6, shooting.y-shooting.vy*6); ctx.stroke(); if(shooting.life<=0) shooting=null; }
         ctx.globalAlpha=1; raf=requestAnimationFrame(draw);
       }
+      function updateWishHint(){
+        const hint=$("starHint"); if(!hint) return;
+        if(typeof DailyLock==="undefined" || DailyLock.available("wish")){ hint.textContent = "🌠 Bir yıldıza dokun, dilek tut"; }
+        else { hint.textContent = "⏳ Bugünkü dileğini tuttun. Yeni dilek: " + fmtCountdown(DailyLock.remainingMs("wish")); }
+      }
       function wish(){
         if(!W) return;
+        if(typeof DailyLock!=="undefined" && !DailyLock.available("wish")){
+          const el=$("starWishMsg"); if(el){ el.textContent="Bugün dileğini çoktan tuttun 💫"; el.classList.remove("show"); void el.offsetWidth; el.classList.add("show"); }
+          updateWishHint(); return;
+        }
         shooting = { x:W*0.08, y:H*0.12, vx:(W*0.85)/55, vy:(H*0.25)/55, life:55, max:55 };
         const msg = wishes[Math.floor(Math.random()*wishes.length)];
         const el = $("starWishMsg"); el.textContent = msg; el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
-        $("starHint").style.opacity = "0"; setTimeout(()=> $("starHint").style.opacity = "", 3400);
         if(typeof burstHearts==="function") burstHearts();
+        if(typeof DailyLock!=="undefined") DailyLock.mark("wish").then(updateWishHint);
+        if(window.Ach) window.Ach.bump("wish");
       }
       sky.addEventListener("click", wish);
+      updateWishHint();
+      setInterval(updateWishHint, 1000);
+      document.addEventListener("dailyLocksUpdated", updateWishHint);
       resize(); draw();
       if(window.ResizeObserver){
         sky._ro = new ResizeObserver(()=>{ const w = Math.round(sky.getBoundingClientRect().width); if(w>2 && Math.abs(w-lastW)>4) resize(); });
@@ -3098,58 +3707,119 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
       const daysTogether = Math.max(0, Math.floor((Date.now()-new Date((CONFIG.sinceDate||"2025-09-12")+"T00:00:00"))/86400000));
       function countUp(el,target,dur){ dur=dur||1000; const t0=performance.now(); (function s(t){ const p=Math.min(1,(t-t0)/dur); el.textContent=Math.round(target*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(s); })(performance.now()); setTimeout(()=>{ el.textContent=target; }, dur+150); }
 
-      // --- Rakamlar ---
-      const statDefs = [
-        {icon:"📅", label:"Birlikte gün", get:()=>daysTogether},
-        {icon:"📸", label:"Fotoğraf", get:()=>(CONFIG.photos||[]).length},
-        {icon:"💖", label:"'Seni seviyorum'", get:()=>gi("romantik_love_count")},
-        {icon:"😘", label:"Öpücük", get:()=>gi("romantik_kiss_count")},
-        {icon:"⭐", label:"Tutulan dilek", get:()=>gi("romantik_wish_count")},
-        {icon:"🐻", label:"Ayı Avı rekoru", get:()=>gi("romantik_whack_best")},
-        {icon:"💗", label:"Kalp rekoru", get:()=>gi("romantik_catch_best")},
-        {icon:"📮", label:"Açılan kapsül", get:()=>gi("romantik_capsule_opened")}
-      ];
-      const statEls=[];
-      $("statsGrid").innerHTML = statDefs.map((d,i)=>'<div class="statTile"><div class="stIcon">'+d.icon+'</div><div class="stNum" id="stN'+i+'">0</div><div class="stLbl">'+escapeHtml(d.label)+'</div></div>').join("");
-      statDefs.forEach((d,i)=>{ const el=$("stN"+i); statEls[i]=el; countUp(el,d.get(),1200); });
-      function refreshStats(){ statDefs.forEach((d,i)=>{ statEls[i].textContent = d.get(); }); }
+      // (Bizim Rakamlar bölümü kaldırıldı — refreshStats no-op olarak korunuyor)
+      function refreshStats(){}
 
-      // --- Başarımlar ---
-      const ACHS=[
-        {id:"love",icon:"💖",name:"İlk Aşk",desc:"Sevgi butonuna bas"},
-        {id:"kiss",icon:"😘",name:"Öpücük Yağmuru",desc:"Öpücük gönder"},
-        {id:"cinema",icon:"🎬",name:"Sinemasever",desc:"Anı sinemasını aç"},
-        {id:"gamer",icon:"🎮",name:"Oyuncu",desc:"Bir oyun aç"},
-        {id:"wish",icon:"⭐",name:"Yıldız Avcısı",desc:"Bir dilek tut"},
-        {id:"capsule",icon:"📮",name:"Kapsül Kaşifi",desc:"Bir kapsül aç"},
-        {id:"scratch",icon:"🎨",name:"Kazıyıcı",desc:"Kazı-kazanı çöz"},
-        {id:"vault",icon:"🔐",name:"Kasa Ustası",desc:"Kasayı aç"},
-        {id:"detective",icon:"🕵️",name:"Dedektif",desc:"Gizli bir sır bul"},
-        {id:"quiz",icon:"💕",name:"Kalp Okuyucu",desc:"Partnerini tanıma testini çöz"},
-        {id:"love100",icon:"💯",name:"Yüz Kere Sevgi",desc:"100 kez sevgi gönder"}
-      ];
-      function getU(){ try{ return JSON.parse(LS.getItem(uk("romantik_ach"))||"[]"); }catch(e){ return []; } }
-      function renderAch(){
-        const u=getU();
-        $("achGrid").innerHTML = ACHS.map(a=>'<div class="ach '+(u.indexOf(a.id)>-1?'unlocked':'locked')+'"><div class="achIcon">'+(u.indexOf(a.id)>-1?a.icon:'🔒')+'</div><div><div class="achName">'+escapeHtml(a.name)+'</div><div class="achDesc">'+escapeHtml(a.desc)+'</div></div></div>').join("");
-        $("achProgress").textContent = u.length+" / "+ACHS.length+" başarım açıldı";
-      }
-      function unlock(id){
-        const u=getU(); if(u.indexOf(id)>-1) return; u.push(id); LS.setItem(uk("romantik_ach"),JSON.stringify(u)); renderAch();
-        const a=ACHS.filter(x=>x.id===id)[0];
-        if(a){ if(typeof showToast==="function") showToast("🏆 Başarım açıldı: "+a.name+" "+a.icon, 3200); if(typeof burstConfetti==="function") burstConfetti(); }
-      }
-      renderAch();
+      // --- Başarımlar (25+, 3 seviyeli, kişiye özel) ---
+      const TIER_NAMES = ["Bronz","Gümüş","Altın"];
+      const TIER_MEDALS = ["🥉","🥈","🥇"];
+      function cKey(c){ return uk("ac_"+c); }
+      function getCount(c){ return gi(cKey(c)); }
+      function getEvents(){ try{ return JSON.parse(LS.getItem(uk("romantik_ach"))||"[]"); }catch(e){ return []; } }
+      function saveEvents(a){ LS.setItem(uk("romantik_ach"), JSON.stringify(a)); }
 
-      // --- Etkileşim dinleyicileri ---
-      const loveBtn=$("loveBtn"); if(loveBtn) loveBtn.addEventListener("click", ()=>{ unlock("love"); if(gi("romantik_love_count")>=100) unlock("love100"); refreshStats(); });
-      const kissBtn=$("kissBtn"); if(kissBtn) kissBtn.addEventListener("click", ()=>{ bump("romantik_kiss_count"); unlock("kiss"); refreshStats(); });
-      const sky=$("starSky"); if(sky) sky.addEventListener("click", ()=>{ bump("romantik_wish_count"); unlock("wish"); refreshStats(); });
-      const slBtn=$("slideshowBtn"); if(slBtn) slBtn.addEventListener("click", ()=> unlock("cinema"));
-      ["gameMemoryBtn","gameWhackBtn","gameQuizBtn","gameLoveMeterBtn","gameCookieBtn","gameCatchBtn","gamePuzzleBtn"].forEach(id=>{ const b=$(id); if(b) b.addEventListener("click", ()=> unlock("gamer")); });
-      const title=$("title"); if(title) title.addEventListener("dblclick", ()=> unlock("detective"));
-      const capList=$("capsuleList"); if(capList) capList.addEventListener("click", (e)=>{ if(e.target.closest && e.target.closest(".capsule.unlocked")){ bump("romantik_capsule_opened"); unlock("capsule"); refreshStats(); } });
-      document.addEventListener("achEvent", (e)=>{ if(e.detail==="scratch") unlock("scratch"); else if(e.detail==="vault") unlock("vault"); else if(e.detail==="quiz") unlock("quiz"); });
+      const DEFS = [
+        { id:"love", icon:"💗", name:"Sevgi Yağmuru", how:"'Seni seviyorum' butonuna bas", counter:"love", tiers:[10,50,200] },
+        { id:"kiss", icon:"😘", name:"Öpücük Ustası", how:"Öpücük gönder butonuna bas", counter:"kiss", tiers:[10,50,200] },
+        { id:"wish", icon:"⭐", name:"Dilek Toplayıcı", how:"Gökyüzünde dilek tut (günde 1)", counter:"wish", tiers:[3,10,30] },
+        { id:"balloon", icon:"🎈", name:"Balon Avcısı", how:"Günün balonunu patlat", counter:"balloon", tiers:[3,10,30] },
+        { id:"photo", icon:"📸", name:"Anı Biriktiren", how:"Galeriye fotoğraf ekle", counter:"photo", tiers:[1,5,15] },
+        { id:"song", icon:"🎵", name:"Liste DJ'i", how:"Müzik listesine şarkı ekle", counter:"song", tiers:[1,5,15] },
+        { id:"game", icon:"🎮", name:"Oyuncu", how:"Oyun aç ve oyna", counter:"game", tiers:[3,10,25] },
+        { id:"think", icon:"💭", name:"Düşünen Kalp", how:"'Seni düşünüyorum' butonuna bas", counter:"think", tiers:[5,20,60] },
+        { id:"doodle", icon:"🖌️", name:"Ressam", how:"Karalama tahtasına çiz", counter:"doodle", tiers:[1,5,15] },
+        { id:"compliment", icon:"🌟", name:"İltifat Koleksiyoncusu", how:"Günün iltifatını gör (her ziyaret)", counter:"visit", tiers:[3,10,30] },
+        { id:"firstlogin", icon:"👣", name:"İlk Adım", how:"Siteye giriş yap", event:true },
+        { id:"cinema", icon:"🎬", name:"Sinemasever", how:"Anı sinemasını aç", event:true },
+        { id:"capsule", icon:"📮", name:"Kapsül Kaşifi", how:"Bir zaman kapsülü mektubu aç", event:true },
+        { id:"scratch", icon:"🎨", name:"Kazıyıcı", how:"Kazı-kazan sürprizini kazı", event:true },
+        { id:"quiz", icon:"💕", name:"Kalp Okuyucu", how:"'Beni Ne Kadar Tanıyorsun' testini bitir", event:true },
+        { id:"detective", icon:"🕵️", name:"Dedektif", how:"Başlığa çift tıklayıp gizli sırrı bul", event:true },
+        { id:"papatya", icon:"🌼", name:"Papatya Falcısı", how:"Papatya falını aç", event:true },
+        { id:"lovemeter", icon:"💘", name:"Aşkometre", how:"Aşkometreyi aç", event:true },
+        { id:"cookie", icon:"🥠", name:"Şanslı", how:"Şanslı kurabiyeyi aç", event:true },
+        { id:"puzzle", icon:"🧩", name:"Yapboz Ustası", how:"Fotoğraf yapbozunu oyna", event:true },
+        { id:"catch", icon:"💖", name:"Kalp Yakalayıcı", how:"Kalp Yakala oyununu oyna", event:true },
+        { id:"whack", icon:"🐻", name:"Ayı Avcısı", how:"Ayı Avı oyununu oyna", event:true },
+        { id:"gallery", icon:"🖼️", name:"Galeri Sanatçısı", how:"Galeride 'Tümünü Gör'ü aç", event:true },
+        { id:"seviyor", icon:"❓", name:"Meraklı", how:"'Beni seviyor musun?' oyununu aç", event:true },
+        { id:"music", icon:"🎧", name:"Müzik Ruhu", how:"Bir şarkı çal", event:true },
+        { id:"nightowl", icon:"🌙", name:"Gece Kuşu", how:"Gece (00-05 arası) siteye gir", event:true },
+        { id:"earlybird", icon:"🌅", name:"Erken Kuş", how:"Sabah erken (05-08 arası) siteye gir", event:true },
+        { id:"days100", icon:"💯", name:"Yüz Gün Aşk", how:"Birlikteliğiniz 100 günü geçsin", auto:()=>daysTogether>=100 },
+        { id:"days180", icon:"📅", name:"Yarım Yıl", how:"Birlikteliğiniz 180 günü geçsin", auto:()=>daysTogether>=180 },
+        { id:"complete", icon:"👑", name:"Tam Kalp", how:"Diğer tüm başarımları tamamla", meta:true }
+      ];
+
+      function tierLevel(def, c){ let lv=0; for(let i=0;i<def.tiers.length;i++) if(c>=def.tiers[i]) lv=i+1; return lv; }
+      function levelOf(def){
+        if(def.tiers) return tierLevel(def, getCount(def.counter));
+        if(def.auto) return def.auto()?1:0;
+        if(def.meta){ const others=DEFS.filter(d=>d.id!==def.id); return others.every(d=> d.tiers ? levelOf(d)>=3 : levelOf(d)>=1 )?1:0; }
+        return getEvents().indexOf(def.id)>-1 ? 1 : 0;
+      }
+      function maxLevel(def){ return def.tiers ? 3 : 1; }
+      function progressText(def){
+        if(def.tiers){ const c=getCount(def.counter), lv=levelOf(def); if(lv>=3) return "Tamamlandı! 🥇 (toplam "+c+")"; const next=def.tiers[lv]; return c+" / "+next+" — "+TIER_NAMES[lv]+" için "+(next-c)+" tane daha"; }
+        return levelOf(def)>=1 ? "Tamamlandı ✓" : "Henüz kazanılmadı";
+      }
+      function render(){
+        const grid=$("achGrid"); if(!grid) return;
+        let done=0, total=0;
+        grid.innerHTML="";
+        DEFS.forEach(def=>{
+          const lv=levelOf(def), mx=maxLevel(def);
+          total+=mx; done+=lv;
+          const unlocked=lv>0;
+          const medal=def.tiers ? (lv>0?TIER_MEDALS[lv-1]:"") : "";
+          const card=document.createElement("div");
+          card.className="ach "+(unlocked?"unlocked":"locked");
+          let bar="";
+          if(def.tiers){ const pct=Math.min(100, getCount(def.counter)/def.tiers[2]*100); bar='<div class="achBar"><div class="achBarFill" style="width:'+pct+'%"></div></div>'; }
+          card.innerHTML='<div class="achIcon">'+(unlocked?def.icon:'🔒')+'</div>'+
+            '<div style="min-width:0; flex:1"><div class="achName">'+escapeHtml(def.name)+(medal?' '+medal:'')+'</div>'+
+            '<div class="achDesc">'+escapeHtml(def.how)+'</div>'+bar+'</div>';
+          card.onclick=()=>showDetail(def);
+          grid.appendChild(card);
+        });
+        $("achProgress").textContent = "İlerleme: "+done+" / "+total+" seviye · "+(window.currentUser||"")+" için";
+      }
+      function showDetail(def){
+        const lv=levelOf(def);
+        $("achModalIcon").textContent = lv>0 ? def.icon : "🔒";
+        $("achModalName").textContent = def.name;
+        $("achModalHow").textContent = "Nasıl kazanılır: " + def.how;
+        $("achModalProg").textContent = progressText(def);
+        const tiers=$("achModalTiers"); tiers.innerHTML="";
+        if(def.tiers){ for(let i=0;i<3;i++){ const d=document.createElement("div"); d.className="achTierDot "+(lv>=i+1?"on":"off"); d.textContent=TIER_MEDALS[i]; d.title=TIER_NAMES[i]+" ("+def.tiers[i]+")"; tiers.appendChild(d); } }
+        $("achModal").classList.add("open");
+      }
+      $("achModalClose").addEventListener("click", ()=> $("achModal").classList.remove("open"));
+      $("achModal").addEventListener("click", e=>{ if(e.target.id==="achModal") e.target.classList.remove("open"); });
+
+      function event(id){ const a=getEvents(); if(a.indexOf(id)>-1) return; a.push(id); saveEvents(a); const def=DEFS.filter(d=>d.id===id)[0]; if(def){ if(typeof showToast==="function") showToast("🏆 Başarım: "+def.name+" "+def.icon, 3000); if(typeof burstConfetti==="function") burstConfetti(); } render(); }
+      function bumpAch(counter, n){ n=n||1; const def=DEFS.filter(d=>d.counter===counter)[0]; const key=cKey(counter); const before=gi(key), after=before+n; LS.setItem(key,String(after)); if(def && def.tiers){ const bl=tierLevel(def,before), al=tierLevel(def,after); if(al>bl){ if(typeof showToast==="function") showToast("🏆 "+def.name+" — "+TIER_NAMES[al-1]+" "+TIER_MEDALS[al-1], 3000); if(typeof burstConfetti==="function") burstConfetti(); } } render(); }
+      window.Ach = { bump: bumpAch, event: event, render: render };
+
+      render();
+
+      // İlk giriş + zaman tabanlı olaylar
+      event("firstlogin");
+      const hr=new Date().getHours();
+      if(hr>=0 && hr<5) event("nightowl"); else if(hr>=5 && hr<8) event("earlybird");
+      // İltifat/ziyaret sayacı (her açılışta bir)
+      bumpAch("visit");
+
+      // --- Etkileşim dinleyicileri (bu kapsamdaki öğeler) ---
+      const loveBtn=$("loveBtn"); if(loveBtn) loveBtn.addEventListener("click", ()=> bumpAch("love"));
+      const kissBtn=$("kissBtn"); if(kissBtn) kissBtn.addEventListener("click", ()=> bumpAch("kiss"));
+      const slBtn=$("slideshowBtn"); if(slBtn) slBtn.addEventListener("click", ()=> event("cinema"));
+      const title=$("title"); if(title) title.addEventListener("dblclick", ()=> event("detective"));
+      const expandBtn=$("expandGalleryBtn"); if(expandBtn) expandBtn.addEventListener("click", ()=> event("gallery"));
+      const gameEvents = { gameWhackBtn:"whack", gameCatchBtn:"catch", gamePuzzleBtn:"puzzle", gameLoveMeterBtn:"lovemeter", gameCookieBtn:"cookie", gameSeviyorBtn:"seviyor", gamePapatyaBtn:"papatya", gameQuizBtn:null, gameMemoryBtn:null };
+      Object.keys(gameEvents).forEach(id=>{ const b=$(id); if(b) b.addEventListener("click", ()=>{ bumpAch("game"); if(gameEvents[id]) event(gameEvents[id]); }); });
+      const capList=$("capsuleList"); if(capList) capList.addEventListener("click", (e)=>{ if(e.target.closest && e.target.closest(".capsule.unlocked")) event("capsule"); });
+      document.addEventListener("achEvent", (e)=>{ if(e.detail) event(e.detail); });
     })();
 
     /* =========================================================
@@ -3176,18 +3846,44 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
        ========================================================= */
     (function distance(){
       const wrap=$("distanceWrap"); if(!wrap) return;
-      const km=CONFIG.distanceKm||0, cityMine=CONFIG.cityMine||"Ben", cityHer=CONFIG.cityHer||"Sen";
+      const km=CONFIG.distanceKm||0;
+      // Şehirler giren kişiye göre yer değiştirir: giren kişi solda, partneri sağda
+      const cities = CONFIG.cities || {};
+      const cityMine = cities[window.currentUser] || CONFIG.cityMine || "Ben";
+      const cityHer  = cities[PARTNER[window.currentUser]] || CONFIG.cityHer || "Sen";
+      // Her dakikada değişen rastgele animasyon çeşitleri
+      const ANIMS = [
+        {emoji:"💗", dur:4,   rev:false},
+        {emoji:"💌", dur:5,   rev:false},
+        {emoji:"✈️", dur:3.2, rev:false},
+        {emoji:"🕊️", dur:6,   rev:false},
+        {emoji:"🚗", dur:4.5, rev:false},
+        {emoji:"⭐", dur:5.5, rev:false},
+        {emoji:"🎈", dur:7,   rev:true},
+        {emoji:"💞", dur:4.2, rev:false},
+        {emoji:"🚀", dur:3,   rev:false},
+        {emoji:"🦋", dur:6.5, rev:true}
+      ];
       wrap.innerHTML =
-        '<svg viewBox="0 0 340 150" class="distSvg" xmlns="http://www.w3.org/2000/svg">'+
-        '<defs><linearGradient id="distGrad" x1="0" x2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent2)"/></linearGradient></defs>'+
-        '<path id="distPath" d="M45,100 Q170,28 295,100" fill="none" stroke="url(#distGrad)" stroke-width="2.5" class="distDash"/>'+
-        '<circle cx="45" cy="100" r="6" style="fill:var(--accent)"/>'+
-        '<circle cx="295" cy="100" r="6" style="fill:var(--accent2)"/>'+
-        '<text x="45" y="126" text-anchor="middle" class="distPin" style="fill:var(--muted)">📍 '+escapeHtml(cityMine)+'</text>'+
-        '<text x="295" y="126" text-anchor="middle" class="distPin" style="fill:var(--muted)">📍 '+escapeHtml(cityHer)+'</text>'+
-        '<text font-size="22" text-anchor="middle" dominant-baseline="central">💗<animateMotion dur="4s" repeatCount="indefinite"><mpath href="#distPath"/></animateMotion></text>'+
-        '</svg>'+
+        '<div id="distSvgBox"></div>'+
         '<div class="distInfo"><div class="distKm" id="distKm">0 km</div><div style="color:var(--muted); font-size:14px;">uzaktayız ama kalbimize <strong style="color:var(--accent)">0 km</strong> 💗</div></div>';
+      let lastIdx = -1;
+      function applyAnim(a){
+        const mp = a.rev ? ' keyPoints="1;0" keyTimes="0;1" calcMode="linear"' : '';
+        $("distSvgBox").innerHTML =
+          '<svg viewBox="0 0 340 150" class="distSvg" xmlns="http://www.w3.org/2000/svg">'+
+          '<defs><linearGradient id="distGrad" x1="0" x2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent2)"/></linearGradient></defs>'+
+          '<path id="distPath" d="M45,100 Q170,28 295,100" fill="none" stroke="url(#distGrad)" stroke-width="2.5" class="distDash"/>'+
+          '<circle cx="45" cy="100" r="6" style="fill:var(--accent)"/>'+
+          '<circle cx="295" cy="100" r="6" style="fill:var(--accent2)"/>'+
+          '<text x="45" y="126" text-anchor="middle" class="distPin" style="fill:var(--muted)">📍 '+escapeHtml(cityMine)+'</text>'+
+          '<text x="295" y="126" text-anchor="middle" class="distPin" style="fill:var(--muted)">📍 '+escapeHtml(cityHer)+'</text>'+
+          '<text font-size="22" text-anchor="middle" dominant-baseline="central">'+a.emoji+'<animateMotion dur="'+a.dur+'s" repeatCount="indefinite"'+mp+'><mpath href="#distPath"/></animateMotion></text>'+
+          '</svg>';
+      }
+      function randomAnim(){ let i=Math.floor(Math.random()*ANIMS.length); if(ANIMS.length>1){ let g=0; while(i===lastIdx && g++<6) i=Math.floor(Math.random()*ANIMS.length); } lastIdx=i; applyAnim(ANIMS[i]); }
+      randomAnim();
+      setInterval(()=>{ if(!document.hidden) randomAnim(); }, 60000); // her dakika değişir
       const el=$("distKm"); const t0=performance.now();
       (function s(t){ const p=Math.min(1,(t-t0)/1400); el.textContent=Math.round(km*(1-Math.pow(1-p,3)))+" km"; if(p<1) requestAnimationFrame(s); })(performance.now());
       setTimeout(()=>{ el.textContent=km+" km"; }, 1550);
@@ -3196,61 +3892,53 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
     /* =========================================================
        KİMLİK (ben kimim) — mood & ping için ortak
        ========================================================= */
-    const ME_KEY = "romantik_me";
     const MEMBERS = [CONFIG.loverName || "Sibel", "Oruç"];
-    const whoSel = $("whoAmI");
-    if(whoSel){
-      whoSel.innerHTML = MEMBERS.map(n=>'<option>'+escapeHtml(n)+'</option>').join("");
-      whoSel.value = localStorage.getItem(ME_KEY) || MEMBERS[0];
-      whoSel.addEventListener("change", ()=> localStorage.setItem(ME_KEY, whoSel.value));
-    }
-    function me(){ return (whoSel && whoSel.value) || MEMBERS[0]; }
+    function me(){ return window.currentUser || MEMBERS[0]; }
     function timeAgo(ts){ if(!ts) return ""; let s=Math.floor((Date.now()-ts)/1000); if(s<60) return "az önce"; let m=Math.floor(s/60); if(m<60) return m+" dk önce"; let h=Math.floor(m/60); if(h<24) return h+" saat önce"; return Math.floor(h/24)+" gün önce"; }
 
-    /* =========================================================
-       📔 RUH HALİ PANOSU (Firebase iki yönlü)
-       ========================================================= */
-    (function moodBoard(){
-      const MOODS = ["😊","🥰","😍","🤗","😌","😢","😴","🥺","😎","🤔","🥱","❤️"];
-      let selMood = MOODS[0];
-      $("moodPick").innerHTML = MOODS.map((m,i)=>'<div class="moodEmoji'+(i===0?' sel':'')+'" data-m="'+m+'">'+m+'</div>').join("");
-      $("moodPick").addEventListener("click", e=>{ const t=e.target.closest(".moodEmoji"); if(!t) return; selMood=t.dataset.m; $("moodPick").querySelectorAll(".moodEmoji").forEach(x=>x.classList.toggle("sel", x===t)); });
-      async function load(){
-        let arr=[]; try{ arr=await getCollection("moodBoard"); }catch(e){}
-        arr=(arr||[]).slice(-12).reverse();
-        $("moodFeed").innerHTML = arr.length ? arr.map(m=>'<div class="moodItem"><div class="mHead"><span class="mName">'+escapeHtml(m.name||"")+'</span><span>'+escapeHtml(m.date||"")+'</span></div><div class="mBody">'+escapeHtml(m.mood||"")+' '+escapeHtml(m.note||"")+'</div></div>').join("") : "<p style='color:var(--muted); font-size:14px;'>Henüz paylaşım yok. İlk sen paylaş 💗</p>";
-      }
-      $("moodSend").addEventListener("click", async ()=>{
-        let arr=[]; try{ arr=await getCollection("moodBoard"); }catch(e){}
-        arr=(arr||[]); arr.push({ name:me(), mood:selMood, note:$("moodNote").value.trim(), date:new Date().toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) });
-        if(arr.length>60) arr=arr.slice(-60);
-        try{ await setCollection("moodBoard", arr); }catch(e){}
-        $("moodNote").value=""; if(typeof burstHearts==="function") burstHearts(); load();
-      });
-      load();
-    })();
+    // (Bugün Nasılsın / Ruh Hali Panosu bölümü kaldırıldı)
 
     /* =========================================================
        🔔 SENİ DÜŞÜNÜYORUM (Firebase iki yönlü)
        ========================================================= */
     (function thinking(){
-      async function load(){
-        let d={}; try{ d=await getDoc("thinkingPings"); }catch(e){}
+      let seenTs = null;
+      function render(d){
         d=d||{}; const total=d.total||0; const last=d.last;
         let t = "Toplam <strong>"+total+"</strong> kez birbirinizi düşündünüz 💭";
-        if(last && last.name){ t += "<br>Son: <strong>"+escapeHtml(last.name)+"</strong> — "+timeAgo(last.ts); }
+        if(last && last.name){ t += "<br>Son düşünen: <strong>"+escapeHtml(last.name)+"</strong> — "+timeAgo(last.ts); }
         $("thinkStatus").innerHTML = t;
       }
+      function notifyPartner(last){
+        const msg = "💭 "+last.name+" şu an seni düşünüyor 💗";
+        if(typeof showToast==="function") showToast(msg, 4500);
+        if(typeof burstHearts==="function") burstHearts();
+        try{ if("Notification" in window && Notification.permission==="granted") new Notification("Bizim Hikâyemiz 💗", { body: msg }); }catch(e){}
+      }
+      // Realtime: iki cihaz arasında canlı senkron + karşı taraf basınca bildirim
+      if(typeof subscribeDoc==="function"){
+        subscribeDoc("thinkingPings", (d)=>{
+          d=d||{}; render(d);
+          const last=d.last;
+          if(last && last.ts){
+            if(seenTs===null){ seenTs=last.ts; }
+            else if(last.ts>seenTs){ seenTs=last.ts; if(last.name && last.name!==me()) notifyPartner(last); }
+          }
+        });
+      } else { (async()=>{ let d={}; try{ d=await getDoc("thinkingPings"); }catch(e){} render(d); if(d&&d.last) seenTs=d.last.ts; })(); }
+
       $("thinkBtn").addEventListener("click", async ()=>{
+        try{ if("Notification" in window && Notification.permission==="default") Notification.requestPermission(); }catch(e){}
         let d={}; try{ d=await getDoc("thinkingPings"); }catch(e){}
         d=d||{}; d.total=(d.total||0)+1; d.last={ name:me(), ts:Date.now() };
+        seenTs = d.last.ts;
         try{ await setDoc("thinkingPings", d); }catch(e){}
+        if(window.Ach) window.Ach.bump("think");
+        render(d);
         if(typeof showToast==="function") showToast("💭 "+me()+" şu an seni düşünüyor 💗", 3000);
         const r=$("thinkBtn").getBoundingClientRect();
         for(let i=0;i<6;i++){ const b=document.createElement("div"); b.className="flyKiss"; b.textContent="💭"; b.style.left=(r.left+r.width/2)+"px"; b.style.top=r.top+"px"; b.style.setProperty("--kx",rnd(-100,100).toFixed(0)+"px"); b.style.setProperty("--kr",rnd(-30,30).toFixed(0)+"deg"); b.style.animation="kissFly "+rnd(1.6,2.4).toFixed(2)+"s ease-out forwards"; b.style.animationDelay=(i*0.08)+"s"; document.body.appendChild(b); setTimeout(()=>b.remove(),3000); }
-        load();
       });
-      load();
     })();
 
     /* =========================================================
@@ -3258,59 +3946,63 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
        ========================================================= */
     (function doodle(){
       const cv=$("doodleCanvas"), wrap=$("doodleWrap");
-      let ctx, drawing=false, color="#ff4d8d", size=4, last=null, lastW=0;
+      let ctx, drawing=false, color="#ff4d8d", size=5, last=null, lastW=0, eraser=false;
+      let strokes=[];        // ortak (senkron) çizim: [{color,size,eraser,by,pts:[{x,y}...]}] — pts 0..1 normalize
+      let curStroke=null;    // o an çizilen
+      let _doodleAch=false, _saving=false;
       const colors=["#ff4d8d","#9b5cff","#35c9d6","#ffd43b","#69db7c","#ff922b","#ffffff","#222222"];
       $("doodleColors").innerHTML = colors.map((c,i)=>'<span class="doodleColor'+(i===0?' sel':'')+'" data-c="'+c+'" style="background:'+c+'"></span>').join("");
-      $("doodleColors").addEventListener("click", e=>{ const t=e.target.closest(".doodleColor"); if(!t) return; color=t.dataset.c; $("doodleColors").querySelectorAll(".doodleColor").forEach(x=>x.classList.toggle("sel", x===t)); });
-      $("doodleSize").addEventListener("input", ()=> size=parseInt($("doodleSize").value)||4);
-      function setup(preserve){
+      function setEraser(on){ eraser=on; $("doodleEraser").classList.toggle("active", on); }
+      $("doodleColors").addEventListener("click", e=>{ const t=e.target.closest(".doodleColor"); if(!t) return; color=t.dataset.c; setEraser(false); $("doodleColors").querySelectorAll(".doodleColor").forEach(x=>x.classList.toggle("sel", x===t)); });
+      $("doodleSize").addEventListener("input", ()=> size=parseInt($("doodleSize").value)||5);
+      $("doodleEraser").addEventListener("click", ()=> setEraser(!eraser));
+
+      function dims(){ const r=cv.getBoundingClientRect(); return { w:r.width, h:r.height }; }
+      function setupCanvas(){
         const rect=cv.getBoundingClientRect(); if(rect.width<2) return;
-        let img=null; const dpr=window.devicePixelRatio||1;
-        if(preserve && ctx){ try{ img=cv.toDataURL(); }catch(e){} }
-        lastW=Math.round(rect.width);
+        const dpr=window.devicePixelRatio||1; lastW=Math.round(rect.width);
         cv.width=Math.round(rect.width*dpr); cv.height=Math.round(rect.height*dpr);
         ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
         ctx.lineCap="round"; ctx.lineJoin="round";
-        ctx.fillStyle="#fff"; ctx.fillRect(0,0,rect.width,rect.height);
-        if(img){ const im=new Image(); im.onload=function(){ ctx.drawImage(im,0,0,rect.width,rect.height); }; im.src=img; }
+        redraw();
       }
-      function pos(e){ const r=cv.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
-      cv.addEventListener("pointerdown", e=>{ if(!ctx) return; drawing=true; last=pos(e); ctx.fillStyle=color; ctx.beginPath(); ctx.arc(last.x,last.y,size/2,0,7); ctx.fill(); });
-      cv.addEventListener("pointermove", e=>{ if(!drawing||!ctx) return; const p=pos(e); ctx.strokeStyle=color; ctx.lineWidth=size; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; });
-      window.addEventListener("pointerup", ()=> drawing=false);
-      $("doodleClear").addEventListener("click", ()=> setup(false));
+      function drawStroke(s){
+        const {w,h}=dims(); const pts=s.pts||[]; if(!pts.length) return;
+        ctx.strokeStyle = s.eraser ? "#ffffff" : s.color; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth=s.size;
+        if(pts.length===1){ ctx.beginPath(); ctx.arc(pts[0].x*w, pts[0].y*h, s.size/2, 0, 7); ctx.fill(); return; }
+        ctx.beginPath(); ctx.moveTo(pts[0].x*w, pts[0].y*h);
+        for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x*w, pts[i].y*h);
+        ctx.stroke();
+      }
+      function redraw(){
+        if(!ctx) return; const {w,h}=dims();
+        ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h);
+        strokes.forEach(drawStroke);
+      }
+      function pos(e){ const r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height }; }
+      async function persist(){
+        if(_saving) return; _saving=true;
+        try{ if(typeof setCollection==="function") await setCollection("doodleStrokes", strokes.slice(-600)); }catch(e){}
+        _saving=false;
+      }
+      cv.addEventListener("pointerdown", e=>{ if(!ctx) return; drawing=true; curStroke={ color, size, eraser, by: window.currentUser||"?", pts:[pos(e)] }; drawStroke(curStroke); if(!_doodleAch){ _doodleAch=true; if(window.Ach) window.Ach.bump("doodle"); } });
+      cv.addEventListener("pointermove", e=>{ if(!drawing||!ctx||!curStroke) return; const p=pos(e); curStroke.pts.push(p); const {w,h}=dims(); ctx.strokeStyle = eraser?"#ffffff":color; ctx.lineWidth=size; const n=curStroke.pts.length; ctx.beginPath(); ctx.moveTo(curStroke.pts[n-2].x*w, curStroke.pts[n-2].y*h); ctx.lineTo(p.x*w, p.y*h); ctx.stroke(); });
+      window.addEventListener("pointerup", ()=>{ if(!drawing) return; drawing=false; if(curStroke && curStroke.pts.length){ strokes.push(curStroke); if(strokes.length>600) strokes=strokes.slice(-600); persist(); } curStroke=null; });
+
+      $("doodleUndo").addEventListener("click", ()=>{ for(let i=strokes.length-1;i>=0;i--){ if(strokes[i].by===(window.currentUser||"?")){ strokes.splice(i,1); redraw(); persist(); return; } } });
+      $("doodleClear").addEventListener("click", ()=>{ if(!confirm("Ortak tahtayı ikiniz için de temizle?")) return; strokes=[]; redraw(); persist(); });
       $("doodleSave").addEventListener("click", ()=>{ try{ const a=document.createElement("a"); a.download="bizim-karalama.png"; a.href=cv.toDataURL(); a.click(); }catch(e){} });
-      if(window.ResizeObserver){ wrap._ro=new ResizeObserver(()=>{ const w=Math.round(wrap.getBoundingClientRect().width); if(w>2 && Math.abs(w-lastW)>4) setup(true); }); wrap._ro.observe(wrap); }
-      window.addEventListener("resize", ()=>{ clearTimeout(window._ddRz); window._ddRz=setTimeout(()=>{ const w=Math.round(wrap.getBoundingClientRect().width); if(w>2 && Math.abs(w-lastW)>4) setup(true); }, 250); });
-      setTimeout(()=>setup(false), 400);
+
+      // Realtime ortak çizim
+      if(typeof subscribeCollection==="function"){
+        subscribeCollection("doodleStrokes", (arr)=>{ if(Array.isArray(arr)){ strokes = arr.filter(s=>s&&Array.isArray(s.pts)); redraw(); } });
+      }
+      if(window.ResizeObserver){ wrap._ro=new ResizeObserver(()=>{ const w=Math.round(wrap.getBoundingClientRect().width); if(w>2 && Math.abs(w-lastW)>4) setupCanvas(); }); wrap._ro.observe(wrap); }
+      window.addEventListener("resize", ()=>{ clearTimeout(window._ddRz); window._ddRz=setTimeout(()=>{ const w=Math.round(wrap.getBoundingClientRect().width); if(w>2 && Math.abs(w-lastW)>4) setupCanvas(); }, 250); });
+      setTimeout(setupCanvas, 400);
     })();
 
-    /* =========================================================
-       🎵 ŞARKI İTHAFI (senkron sözler, mevcut müzik dosyası)
-       ========================================================= */
-    (function song(){
-      const lyrics=(CONFIG.songLyrics||[]); const box=$("lyricsBox"); const disc=$("songDisc"); const btn=$("songPlayBtn");
-      $("songTitle").textContent = CONFIG.songTitle || "Sana bir şarkı 🎵";
-      box.innerHTML = lyrics.length ? lyrics.map((l,i)=>'<div class="lyricLine" id="ly'+i+'">'+escapeHtml(l.line)+'</div>').join("") : "<p style='color:var(--muted); font-size:14px;'>Söz eklenmedi.</p>";
-      const audio=document.getElementById("bgMusic");
-      function highlight(){
-        if(!audio) return; const t=audio.currentTime; let idx=-1;
-        for(let i=0;i<lyrics.length;i++){ if(t>=lyrics[i].t) idx=i; }
-        lyrics.forEach((l,i)=>{ const el=$("ly"+i); if(el) el.classList.toggle("active", i===idx); });
-        // Sadece söz kutusunun İÇİNDE kaydır — sayfayı ASLA hareket ettirme (imleç/scroll aşağı kaçmasın)
-        const act=$("ly"+idx);
-        if(act){ box.scrollTop = act.offsetTop - box.offsetTop - (box.clientHeight/2) + (act.clientHeight/2); }
-      }
-      btn.addEventListener("click", ()=>{
-        if(!audio) return;
-        if(audio.paused){ audio.play().catch(()=>{}); } else { audio.pause(); }
-      });
-      if(audio){
-        audio.addEventListener("timeupdate", highlight);
-        audio.addEventListener("play", ()=>{ btn.textContent="⏸ Duraklat"; disc.classList.add("spin"); });
-        audio.addEventListener("pause", ()=>{ btn.textContent="▶ Çal"; disc.classList.remove("spin"); });
-      }
-    })();
+    // (Sana Bir Şarkı bölümü kaldırıldı)
 
     /* =========================================================
        🔐 GİRİŞ / OTURUM / ŞİFRE (tüm siteyi kilitler)
@@ -3370,6 +4062,10 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         $("settingsModal").classList.add("open");
         // Kayıtlı cevapları sonra doldur (modalı bekletmeden)
         (async ()=>{ let data={}; try{ if(typeof getDoc==="function") data=await getDoc(myKeyName()); }catch(e){} data=data||{}; qs.forEach(q=>{ const inp=$("akList").querySelector('input[data-qid="'+q.id+'"]'); if(inp && data[q.id]!=null) inp.value=data[q.id]; }); })();
+        // Oruç'a özel bölümler
+        const isOruc = window.currentUser === "Oruç";
+        $("orucSettings").style.display = isOruc ? "block" : "none";
+        if(isOruc){ loadBalloonEditor(); loadCapsuleEditor(); loadOpeningEditor(); }
       }
       $("settingsBtn").addEventListener("click", openSettings);
       $("settingsClose").addEventListener("click", ()=> $("settingsModal").classList.remove("open"));
@@ -3381,6 +4077,98 @@ Bu kadar güzel, bu kadar anlayışlı, bu kadar derin bakışlı bir kız nası
         $("akSavedInfo").style.color="#69db7c"; $("akSavedInfo").textContent="Kaydedildi ✓ ("+Object.keys(data).length+" cevap)";
         if(typeof burstHearts==="function") burstHearts();
       });
+
+      /* --- Oruç: Balon mesajları --- */
+      async function loadBalloonEditor(){
+        let arr=[]; try{ if(typeof getCollection==="function") arr=await getCollection("balloonMsgs"); }catch(e){}
+        if(!Array.isArray(arr) || !arr.length) arr = (window.__balloonMsgs && window.__balloonMsgs.length) ? window.__balloonMsgs : (window.__balloonMsgsDefault || []);
+        $("balloonMsgsInput").value = arr.join("\n");
+        $("balloonMsgsInfo").textContent = "";
+      }
+      $("balloonMsgsSave").addEventListener("click", async ()=>{
+        const lines = $("balloonMsgsInput").value.split("\n").map(s=>s.trim()).filter(Boolean);
+        window.__balloonMsgs = lines;
+        try{ if(typeof setCollection==="function") await setCollection("balloonMsgs", lines); }catch(e){}
+        $("balloonMsgsInfo").textContent = "Kaydedildi ✓ ("+lines.length+" mesaj)";
+        document.dispatchEvent(new CustomEvent("dailyLocksUpdated"));
+      });
+
+      /* --- Oruç: Zaman kapsülü mektupları --- */
+      let capsData = [];
+      function renderCapEditor(){
+        const ed = $("capsuleEditor"); ed.innerHTML = "";
+        capsData.forEach((c, i)=>{
+          const row = document.createElement("div"); row.className = "capEditRow";
+          row.innerHTML = '<button class="capEditDel" title="Sil">✕</button>'+
+            '<span class="capRowLabel">Açılış tarihi (YYYY-AA-GG)</span><input class="capDate" placeholder="2026-08-15">'+
+            '<span class="capRowLabel">Başlık</span><input class="capTitle" placeholder="Mektup başlığı">'+
+            '<span class="capRowLabel">Mektup</span><textarea class="capText" placeholder="Mektup metni..."></textarea>';
+          row.querySelector(".capDate").value = c.unlock || "";
+          row.querySelector(".capTitle").value = c.title || "";
+          row.querySelector(".capText").value = c.text || "";
+          row.querySelector(".capEditDel").onclick = ()=>{ capsData = collectCaps(); capsData.splice(i,1); renderCapEditor(); };
+          ed.appendChild(row);
+        });
+      }
+      function collectCaps(){
+        const arr = [];
+        $("capsuleEditor").querySelectorAll(".capEditRow").forEach(r=>{
+          const unlock=r.querySelector(".capDate").value.trim(), title=r.querySelector(".capTitle").value.trim(), text=r.querySelector(".capText").value.trim();
+          if(unlock||title||text) arr.push({unlock, title, text});
+        });
+        return arr;
+      }
+      async function loadCapsuleEditor(){
+        let arr=[]; try{ if(typeof getCollection==="function") arr=await getCollection("capsules"); }catch(e){}
+        if(!Array.isArray(arr) || !arr.length) arr = (window.__capsules && window.__capsules.length) ? window.__capsules : (CONFIG.timeCapsules||[]).slice();
+        capsData = arr.map(c=>({unlock:c.unlock||"", title:c.title||"", text:c.text||""}));
+        renderCapEditor(); $("capsuleInfo").textContent = "";
+      }
+      $("capsuleAddBtn").addEventListener("click", ()=>{ capsData = collectCaps(); capsData.push({unlock:"",title:"",text:""}); renderCapEditor(); });
+      $("capsuleSave").addEventListener("click", async ()=>{
+        const arr = collectCaps(); window.__capsules = arr;
+        try{ if(typeof setCollection==="function") await setCollection("capsules", arr); }catch(e){}
+        $("capsuleInfo").textContent = "Kaydedildi ✓ ("+arr.length+" mektup)";
+        if(typeof window.renderCapsules==="function") window.renderCapsules();
+      });
+
+      /* --- Oruç: Açılış mektupları --- */
+      function renderOpeningEditor(data){
+        const ed = $("openingEditor"); ed.innerHTML = "";
+        ["Sibel","Oruç"].forEach(person=>{
+          const base = (CONFIG.people && CONFIG.people[person]) || {};
+          const ov = (data && data[person]) || {};
+          const div = document.createElement("div"); div.className = "openEditPerson";
+          div.innerHTML = '<h5>'+person+' giriş yapınca görecek</h5>'+
+            '<span class="capRowLabel">Başlık</span><input class="setInput openHead">'+
+            '<span class="capRowLabel">Mektup</span><textarea class="setArea openLetter"></textarea>';
+          div.querySelector(".openHead").value = ov.heading || base.heading || "";
+          div.querySelector(".openLetter").value = ov.letter || base.letter || "";
+          div.dataset.person = person;
+          ed.appendChild(div);
+        });
+      }
+      async function loadOpeningEditor(){
+        let d={}; try{ if(typeof getDoc==="function") d=await getDoc("openingLetters"); }catch(e){}
+        renderOpeningEditor(d||{}); $("openingInfo").textContent = "";
+      }
+      $("openingSave").addEventListener("click", async ()=>{
+        const d = {};
+        $("openingEditor").querySelectorAll(".openEditPerson").forEach(div=>{
+          d[div.dataset.person] = { heading: div.querySelector(".openHead").value.trim(), letter: div.querySelector(".openLetter").value.trim() };
+        });
+        window.__openingOverride = d;
+        try{ if(typeof setDoc==="function") await setDoc("openingLetters", d); }catch(e){}
+        $("openingInfo").textContent = "Kaydedildi ✓";
+      });
+
+      // Akordeon: başlık butonuna tıkla-aç/kapat
+      const orucSets = $("orucSettings");
+      if(orucSets){
+        orucSets.querySelectorAll(".setToggle").forEach(btn=>{
+          btn.addEventListener("click", ()=>{ const blk=btn.closest(".setBlock"); if(blk) blk.classList.toggle("open"); });
+        });
+      }
     })();
 
     /* =========================================================
